@@ -1,0 +1,71 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Invoice #{{ order.order_id }}</title>
+  <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+  <style>
+    body { padding: 20px; }
+    .invoice-box { max-width: 900px; margin: auto; border:1px solid #eee; padding:20px; }
+  </style>
+</head>
+<body>
+<div class="invoice-box">
+  <div class="d-flex justify-content-between mb-3">
+    <div>
+      <h3>Invoice #{{ order.order_id }}</h3>
+      <p class="mb-0">Date: {{ order.order_date }}</p>
+      <p class="mb-0">Status: {{ order.order_status }}</p>
+    </div>
+    <div class="text-right">
+      <h5>Jewels and Trinkets</h5>
+    </div>
+  </div>
+
+  <hr>
+
+  <h5>Customer</h5>
+  <p>
+    {{ order.customer_name }}<br>
+    {{ order.customer_email }}
+  </p>
+
+  <h5 class="mt-4">Items</h5>
+  <div class="table-responsive">
+    <table class="table table-sm">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Product</th>
+          <th>Color</th>
+          <th>Qty</th>
+          <th>Price</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in items %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ row.itemName }}</td>
+          <td>{{ row.color }}</td>
+          <td>{{ row.quantity }}</td>
+          <td>Rs.{{ row.price }}/-</td>
+          <td>Rs.{{ row.price }}/-</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-muted">No items</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="text-right mt-3">
+    <h4>Total: Rs.{{ order.totalPrice }}/-</h4>
+  </div>
+
+  <button class="btn btn-secondary mt-3" onclick="window.print()">Print</button>
+</div>
+</body>
+</html>

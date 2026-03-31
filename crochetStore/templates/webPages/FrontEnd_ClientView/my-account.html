@@ -1,0 +1,217 @@
+{% extends "webPages/FrontEnd_ClientView/siteContainer.html" %}
+{% load static %}
+
+{% block element %}
+
+
+<!-- Page Banner Section Start -->
+<div class="page-banner-section section" style="background-image: url('{% static 'webPages/FrontEnd_ClientView/img/bg/page-banner.jpg' %}')">
+    <div class="container">
+        <div class="row">
+            <div class="page-title text-center col">
+                <h1>My Account</h1>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Page Banner Section End -->
+
+<!-- My Account Section Start -->
+<div class="login-register-section section pt-120 pb-90">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 col-12 mx-auto">
+                <div class="login-register-wrapper">
+                    <div class="panel single-accordion">
+
+                        <a class="accordion-head" data-toggle="collapse" data-parent="#account-accordion" href="#account-section">
+                            Manage Your Account
+                        </a>
+
+                        <div id="account-section" class="collapse show">
+                            <div class="checkout-method accordion-body fix">
+                                <ul class="checkout-method-list">
+                                    <li class="active" data-form="profile-form">Profile</li>
+                                    <li data-form="address-form">Addresses</li>
+                                    <li data-form="payment-form">Payment Methods</li>
+                                    <li data-form="orders-form">Order History</li>
+                                </ul>
+
+                                <!-- Profile -->
+                                <form action="{% url 'update_profile' %}" method="post" class="profile-form account-form">
+                                    {% csrf_token %}
+                                    <div class="row">
+                                        <div class="input-box col-md-6 col-12 mb-20">
+                                            <input type="text" name="username" placeholder="Full Name" value="{{ user.username }}">
+                                        </div>
+                                        <div class="input-box col-md-6 col-12 mb-20">
+                                            <input type="email" name="email" placeholder="Email Address" value="{{ user.email }}">
+                                        </div>
+                                        <div class="input-box col-md-6 col-12 mb-20">
+                                            <input type="text" name="phone" placeholder="Phone Number" value="{{ user.phone }}">
+                                        </div>
+                                        <div class="input-box col-md-6 col-12 mb-20">
+                                            <input type="text" disabled value="Role: {{ user.role|default:'customer' }}">
+                                        </div>
+                                        <div class="input-box col-md-6 col-12 mb-20">
+                                            <input type="submit" value="Update Profile">
+                                        </div>
+                                    </div>
+                                </form>
+
+                                <!-- Logout Button -->
+                                <form action="{% url 'logout' %}" method="post" class="mt-3">
+                                    {% csrf_token %}
+                                    <input type="submit" value="Logout" class="btn btn-danger">
+                                </form>
+
+                                <!-- Saved Addresses -->
+                                <div class="address-form account-form" style="display: none;">
+                                    <h5 class="mb-20">Saved Addresses</h5>
+                                    <div class="row">
+                                        {% if addresses %}
+                                            {% for addr in addresses %}
+                                                <div class="col-12 mb-20">
+                                                    <p>
+                                                        <strong>Address {{ forloop.counter }}:</strong>
+                                                        {{ addr.houseNumber }}, {{ addr.area }}, {{ addr.city }}, {{ addr.province }}
+                                                    </p>
+                                                    <form action="{% url 'manage_addresses' %}" method="post" style="display:inline;">
+                                                        {% csrf_token %}
+                                                        <button class="button" type="submit" name="delete_address" value="{{ addr.addr_id }}">Delete</button>
+                                                    </form>
+                                                </div>
+                                            {% endfor %}
+                                        {% else %}
+                                            <div class="col-12 mb-20">
+                                                <p>You have no saved addresses yet.</p>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <hr />
+                                    <h5 class="mb-20">Add New Address</h5>
+                                    <form action="{% url 'manage_addresses' %}" method="post">
+                                        {% csrf_token %}
+                                        <div class="row">
+                                            <div class="input-box col-md-6 col-12 mb-20">
+                                                <input type="text" name="province" placeholder="Province">
+                                            </div>
+                                            <div class="input-box col-md-6 col-12 mb-20">
+                                                <input type="text" name="city" placeholder="City">
+                                            </div>
+                                            <div class="input-box col-md-6 col-12 mb-20">
+                                                <input type="text" name="area" placeholder="Area">
+                                            </div>
+                                            <div class="input-box col-md-6 col-12 mb-20">
+                                                <input type="text" name="houseNumber" placeholder="House Number">
+                                            </div>
+                                            <div class="input-box col-md-6 col-12 mb-20">
+                                                <button type="submit" name="add_address" class="button">Add Address</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <!-- Payment Methods -->
+                                <div class="payment-form account-form" style="display: none;">
+                                    <h5 class="mb-20">Preferred Payment Method</h5>
+                                    <form action="{% url 'manage_payment_method' %}" method="post">
+                                        {% csrf_token %}
+                                        <div class="row">
+                                            <div class="input-box col-md-8 col-12 mb-20">
+                                                <select name="payment_method">
+                                                    <option value="">Select a payment method</option>
+                                                    <option value="Cash on Delivery" {% if preferred_payment_method == "Cash on Delivery" %}selected{% endif %}>Cash on Delivery</option>
+                                                    <option value="Credit Card" {% if preferred_payment_method == "Credit Card" %}selected{% endif %}>Credit Card</option>
+                                                    <option value="Debit Card" {% if preferred_payment_method == "Debit Card" %}selected{% endif %}>Debit Card</option>
+                                                    <option value="Bank Transfer" {% if preferred_payment_method == "Bank Transfer" %}selected{% endif %}>Bank Transfer</option>
+                                                </select>
+                                            </div>
+                                            <div class="input-box col-md-4 col-12 mb-20">
+                                                <button type="submit" class="button">Save</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                    {% if preferred_payment_method %}
+                                        <p class="mt-10">Current preference: <strong>{{ preferred_payment_method }}</strong></p>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Order History (placeholder, not yet wired to Orders/OrderItems tables) -->
+                                <div class="orders-form account-form" style="display: none;">
+                                    <h5 class="mb-20">Order History</h5>
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Order #</th>
+                                                    <th>Date</th>
+                                                    <th>Status</th>
+                                                    <th>Total</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% if orders %}
+                                                    {% for order in orders %}
+                                                        <tr>
+                                                            <td>#{{ order.order_id }}</td>
+                                                            <td>{{ order.order_date }}</td>
+                                                            <td>{{ order.order_status }}</td>
+                                                            <td>${{ order.totalPrice }}</td>
+                                                            <td><a href="{% url 'under_construction' %}" class="button">View</a></td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <tr>
+                                                        <td colspan="5">You have not placed any orders yet.</td>
+                                                    </tr>
+                                                {% endif %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- My Account Section End -->
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var tabs = document.querySelectorAll(".checkout-method-list li");
+        var sections = document.querySelectorAll(".account-form");
+
+        function showSection(formClass) {
+            sections.forEach(function (el) {
+                if (el.classList.contains(formClass)) {
+                    el.style.display = "";
+                } else {
+                    el.style.display = "none";
+                }
+            });
+        }
+
+        tabs.forEach(function (tab) {
+            tab.addEventListener("click", function () {
+                tabs.forEach(function (t) { t.classList.remove("active"); });
+                tab.classList.add("active");
+                var formClass = tab.getAttribute("data-form");
+                if (formClass) {
+                    showSection(formClass);
+                }
+            });
+        });
+
+        // Ensure initial state is profile tab visible
+        showSection("profile-form");
+    });
+</script>
+
+{% endblock %}

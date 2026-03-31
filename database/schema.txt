@@ -1,0 +1,57 @@
+SCHEMA:
+
+Users( user_id, name, email, phone, password, role, created_at)
+Items( item_id, itemName, basePrice, image)
+ItemsQuant( itemQuant_id, item_id, color, stock, description)
+Category( cat_id, categoryName)
+SubCategory( subcat_id, cat_id, item_id, subCatName)
+Orders( order_id, user_id, staff_id, addr_id, totalPrice, paymentMethod, order_status, order_date, dispatch_date, trackingID)
+OrderItems( orderItem_id, order_id, itemQuant_id, quantity, price)
+Cart( cart_id, user_id, itemQuant_id, quantity)
+Wishlist( wishlist_id, user_id, itemQuant_id)
+Complaint( complaint_id, user_id, description, status, created_at)
+Address( addr_id, province, city, area, houseNumber)
+UserAddress( user_id, addr_id)
+
+
+RELATIONS AND CARDINALITY:
+
+User ↔ Orders
+One User can place many Orders. (1:N)
+FK: Orders.user_id
+User (Staff role) ↔ Orders
+One Staff User can handle many Orders. (1:N)
+FK: Orders.staff_id
+User ↔ Address (through UserAddress)
+One User can have many Addresses, and one Address can belong to many Users (rare but possible).
+(M:N) resolved by UserAddress
+Orders ↔ Address
+Each Order must have one delivery address. (N:1)
+FK: Orders.addr_id
+Items ↔ ItemsQuant
+One Item can have many ItemQuant variants (colors, stock). (1:N)
+FK: ItemsQuant.item_id
+Category ↔ SubCategory
+One Category can have many SubCategories. (1:N)
+FK: SubCategory.cat_id
+Items ↔ SubCategory
+One Item can appear in many SubCategories. (1:N or M:N depending on business rules).
+Orders ↔ OrderItems
+One Order contains many OrderItems. (1:N)
+FK: OrderItems.order_id
+ItemsQuant ↔ OrderItems
+One ItemQuant can be part of many OrderItems. (1:N)
+FK: OrderItems.itemQuant_id
+User ↔ Cart
+One User can have many Cart entries. (1:N)
+FK: Cart.user_id
+ItemsQuant ↔ Cart
+One ItemQuant can appear in many carts. (1:N)
+FK: Cart.itemQuant_id
+User ↔ Wishlist
+One User can have many Wishlist entries. (1:N)
+ItemsQuant ↔ Wishlist
+One ItemQuant can appear in many wishlists. (1:N)
+User ↔ Complaint
+One User can make many Complaints. (1:N)
+FK: Complaint.user_id
