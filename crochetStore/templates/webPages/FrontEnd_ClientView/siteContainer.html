@@ -8,13 +8,13 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>Christ - Christmas Gift Shop HTML Template</title>
+    <title>PCPartsHub - Quality PC Components</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Favicon -->
     <link rel="shortcut icon" type="image/x-icon" href="{% static 'webPages/FrontEnd_ClientView/img/favicon.ico' %}">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css?family=Lora:400,400i,700,700i" rel="stylesheet"> 
+    <link href="https://fonts.googleapis.com/css?family=Lora:400,400i,700,700i" rel="stylesheet">
     <!-- CSS
 	============================================ -->
     <!-- Bootstrap CSS -->
@@ -32,223 +32,230 @@
 
 <body>
 
-<!-- Main Wrapper Start -->
-<div id="main-wrapper" class="section">
-    
+    <!-- Main Wrapper Start -->
+    <div id="main-wrapper" class="section">
 
-    <!-- Header Section Start -->
-    <div class="header-section section">
-       
-        <!-- Header Top Start -->
-        <div class="header-top">
-            <div class="container">
-                <div class="row">
-                    <div class="col">
 
-                        <!-- Header Top Wrapper Start -->
-                        <div class="header-top-wrapper">
-                            <div class="row">
+        <!-- Header Section Start -->
+        <div class="header-section section">
 
-                                <!-- Header Social -->
-                                <div class="header-social col-md-4 col-12">
-                                    <a href="#"><i class="fa fa-facebook"></i></a>
-                                    <a href="#"><i class="fa fa-twitter"></i></a>
-                                    <a href="#"><i class="fa fa-linkedin"></i></a>
-                                    <a href="#"><i class="fa fa-instagram"></i></a>
-                                    <a href="#"><i class="fa fa-pinterest-p"></i></a>
-                                </div>
+            <!-- Header Top Start -->
+            <div class="header-top">
+                <div class="container">
+                    <div class="row">
+                        <div class="col">
 
-                                <!-- Header Logo -->
-                                <div class="header-logo col-md-4 col-12">
-                                    <a href="{% url 'index' %}" class="logo"><img src="{% static 'webPages/FrontEnd_ClientView/img/logo.png' %}" alt="logo"></a>
-                                </div>
+                            <!-- Header Top Wrapper Start -->
+                            <div class="header-top-wrapper">
+                                <div class="row">
 
-                                <!-- Account Menu -->
-                                <div class="account-menu col-md-4 col-12">
-                                    <ul>
-                                        {% if user.is_authenticated %}
+                                    <!-- Header Social -->
+                                    <div class="header-social col-md-4 col-12">
+                                        <a href="#"><i class="fa fa-facebook"></i></a>
+                                        <a href="#"><i class="fa fa-twitter"></i></a>
+                                        <a href="#"><i class="fa fa-linkedin"></i></a>
+                                        <a href="#"><i class="fa fa-instagram"></i></a>
+                                        <a href="#"><i class="fa fa-pinterest-p"></i></a>
+                                    </div>
+
+                                    <!-- Header Logo -->
+                                    <div class="header-logo col-md-4 col-12">
+                                        <a href="{% url 'index' %}" class="logo"><img
+                                                src="{% static 'webPages/FrontEnd_ClientView/img/logo.png' %}"
+                                                alt="logo"></a>
+                                    </div>
+
+                                    <!-- Account Menu -->
+                                    <div class="account-menu col-md-4 col-12">
+                                        <ul>
+                                            {% if user.is_authenticated %}
                                             <li><a href="#">Welcome, {{ user.username }}</a></li>
-                                        {% else %}
+                                            {% else %}
                                             <li><a href="{% url 'login' %}">Login</a></li>
                                             <li><a href="{% url 'login' %}">Register</a></li>
-                                        {% endif %}
-                                        {% if user.is_authenticated %}
+                                            {% endif %}
+                                            {% if user.is_authenticated %}
                                             <li><a href="{% url 'myaccount' %}">My Account</a></li>
                                             <li><a href="{% url 'wishlist' %}">Wishlist</a></li>
                                             <li><a href="{% url 'cart' %}"><i class="fa fa-shopping-cart"></i></a></li>
-                                        {% endif %}
-                                    </ul>
+                                            {% endif %}
+                                        </ul>
+                                    </div>
+
                                 </div>
+                            </div><!-- Header Top Wrapper End -->
 
-                            </div>
-                        </div><!-- Header Top Wrapper End -->
-
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div><!-- Header Top End -->
-        
-        <!-- Header Bottom Start -->
-        <div class="header-bottom section">
-            <div class="container">
-                <div class="row">
-                   
-                    <!-- Header Bottom Wrapper Start -->
-                    <div class="header-bottom-wrapper text-center col">
+            </div><!-- Header Top End -->
 
-                        <!-- Header Bottom Logo -->
-                        <div class="header-bottom-logo">
-                            <a href="../" class="logo"><img src="{% static 'webPages/FrontEnd_ClientView/img/logo.png' %}" alt="logo"></a>
-                        </div>
+            <!-- Header Bottom Start -->
+            <div class="header-bottom section">
+                <div class="container">
+                    <div class="row">
 
-                        <!-- Main Menu -->
-                        <nav id="main-menu" class="main-menu">
-                            <ul>
-                                {% if request.path|startswith:"/shop" %}
+                        <!-- Header Bottom Wrapper Start -->
+                        <div class="header-bottom-wrapper text-center col">
+
+                            <!-- Header Bottom Logo -->
+                            <div class="header-bottom-logo">
+                                <a href="../" class="logo"><img
+                                        src="{% static 'webPages/FrontEnd_ClientView/img/logo.png' %}" alt="logo"></a>
+                            </div>
+
+                            <!-- Main Menu -->
+                            <nav id="main-menu" class="main-menu">
+                                <ul>
+                                    {% if request.path|startswith:"/shop" %}
                                     <li><a href="{% url 'index' %}">home</a></li>
                                     <li class="active"><a href="{% url 'shop' %}">shop</a></li>
                                     <li><a href="{% url 'about' %}">about</a></li>
-                                {% elif request.path|startswith:"/about" %}
+                                    {% elif request.path|startswith:"/about" %}
                                     <li><a href="{% url 'index' %}">home</a></li>
                                     <li><a href="{% url 'shop' %}">shop</a></li>
                                     <li class="active"><a href="{% url 'about' %}">about</a></li>
-                                {% else %}
+                                    {% else %}
                                     <li class="active"><a href="{% url 'index' %}">home</a></li>
                                     <li><a href="{% url 'shop' %}">shop</a></li>
                                     <li><a href="{% url 'about' %}">about</a></li>
-                                {% endif %}
-                            </ul>
-                        </nav>
+                                    {% endif %}
+                                </ul>
+                            </nav>
 
-                        <!-- Header Search -->
-                        <div class="header-search">
-                            
-                            <!-- Search Toggle -->
-                            <button class="search-toggle"><i class="ion-ios-search-strong"></i></button>
-                            
-                            <!-- Search Form -->
-                            <div class="header-search-form">
-                                <form action="#">
-                                    <input type="text" placeholder="Search...">
-                                    <button><i class="ion-ios-search-strong"></i></button>
-                                </form>
+                            <!-- Header Search -->
+                            <div class="header-search">
+
+                                <!-- Search Toggle -->
+                                <button class="search-toggle"><i class="ion-ios-search-strong"></i></button>
+
+                                <!-- Search Form -->
+                                <div class="header-search-form">
+                                    <form action="#">
+                                        <input type="text" placeholder="Search...">
+                                        <button><i class="ion-ios-search-strong"></i></button>
+                                    </form>
+                                </div>
+
                             </div>
-                            
-                        </div>
-                        
-                        <!-- Mobile Menu -->
-                        <div class="mobile-menu section d-md-none"></div>
 
-                    </div><!-- Header Bottom Wrapper End -->
-                    
+                            <!-- Mobile Menu -->
+                            <div class="mobile-menu section d-md-none"></div>
+
+                        </div><!-- Header Bottom Wrapper End -->
+
+                    </div>
                 </div>
-            </div>
-        </div><!-- Header Bottom End -->
-        
-    </div><!-- Header Section End -->
-    
-       
-    {% block element %}
-    {% endblock %}
+            </div><!-- Header Bottom End -->
 
-       
-    <!-- Footer Section Start-->
-    <div class="footer-section section bg-dark" style="background-image: url('{% static 'webPages/FrontEnd_ClientView/img/bg/footer-bg.png' %}')">
-        <div class="container">
-            
-            <div class="row">
-                <div class="col">
+        </div><!-- Header Section End -->
 
-                    <!-- Footer Top Start -->
-                    <div class="footer-top section pt-80 pb-50">
-                        <div class="row">
 
-                            <!-- Footer Widget -->
-                            <div class="footer-widget col-lg-4 col-md-6 col-12 mb-40">
+        {% block element %}
+        {% endblock %}
 
-                                <img class="footer-logo" src="{% static 'webPages/FrontEnd_ClientView/img/footer-logo.png' %}" alt="logo">
-                                <p>Contrary to popular belief, Lorem Ipsum is nosimply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over Lorem Ipsum is nosimply random text.</p>
+
+        <!-- Footer Section Start-->
+        <div class="footer-section section bg-dark"
+            style="background-image: url('{% static 'webPages/FrontEnd_ClientView/img/bg/footer-bg.png' %}')">
+            <div class="container">
+
+                <div class="row">
+                    <div class="col">
+
+                        <!-- Footer Top Start -->
+                        <div class="footer-top section pt-80 pb-50">
+                            <div class="row">
+
+                                <!-- Footer Widget -->
+                                <div class="footer-widget col-lg-4 col-md-6 col-12 mb-40">
+
+                                    <img class="footer-logo"
+                                        src="{% static 'webPages/FrontEnd_ClientView/img/footer-logo.png' %}"
+                                        alt="logo">
+                                    <p>PCPartsHub provides top-notch computer components, upgrades, and peripherals
+                                        catering to your high-performance computing needs.</p>
+
+                                </div>
+
+                                <!-- Footer Widget -->
+                                <div class="footer-widget col-lg-2 col-md-3 col-12 mb-40">
+
+                                    <h4 class="widget-title">Pages</h4>
+
+                                    <ul>
+                                        <li><a href="{% url 'index' %}">Home</a></li>
+                                        <li><a href="{% url 'shop' %}">Shop</a></li>
+                                        <li><a href="{% url 'about' %}">About us</a></li>
+                                        <li><a href="{% url 'myaccount' %}">My Account</a></li>
+                                        <li><a href="{% url 'cart' %}">Cart</a></li>
+                                        <li><a href="{% url 'wishlist' %}">Wishlist</a></li>
+                                        <li><a href="{% url 'checkout' %}">Checkout</a></li>
+                                    </ul>
+
+                                </div>
+
+                                <!-- Footer Widget -->
+                                <div class="footer-widget col-lg-2 col-md-3 col-12 mb-40">
+
+                                    <h4 class="widget-title">Categories</h4>
+
+                                    <ul>
+                                        <li><a href="{% url 'shop' %}">All Products</a></li>
+                                        <li><a href="{% url 'shop' 1 'Motherboards' %}">Motherboards</a></li>
+                                        <li><a href="{% url 'shop' 1 'GPUs' %}">GPUs</a></li>
+                                        <li><a href="{% url 'shop' 1 'CPUs' %}">CPUs</a></li>
+                                        <li><a href="{% url 'shop' 1 'Memory' %}">Memory</a></li>
+                                    </ul>
+
+                                </div>
+
+                                <!-- Footer Widget -->
+                                <div class="footer-widget col-lg-4 col-md-6 col-12 mb-40">
+
+                                    <h4 class="widget-title">Contact Us</h4>
+
+                                    <ul>
+                                        <li><span>Address:</span> ur address goes here,street Crossroad 123</li>
+                                        <li><span>Phone:</span> +99 859 658 589 . +69 587 456 25</li>
+                                        <li><span>Eax:</span> +55 784 7585 . + 985 698 586</li>
+                                        <li><span>Email:</span> contact@pcpartshub.com</li>
+                                    </ul>
+
+                                </div>
 
                             </div>
+                        </div><!-- Footer Top End -->
 
-                            <!-- Footer Widget -->
-                            <div class="footer-widget col-lg-2 col-md-3 col-12 mb-40">
+                        <!-- Footer Bottom Start -->
+                        <div class="footer-bottom section text-center">
+                            <p><a href="#">PCPartsHub Shop</a></p>
+                        </div><!-- Footer Bottom End -->
 
-                                <h4 class="widget-title">Pages</h4>
-
-                                <ul>
-                                    <li><a href="{% url 'index' %}">Home</a></li>
-                                    <li><a href="{% url 'shop' %}">Shop</a></li>
-                                    <li><a href="{% url 'about' %}">About us</a></li>
-                                    <li><a href="{% url 'myaccount' %}">My Account</a></li>
-                                    <li><a href="{% url 'cart' %}">Cart</a></li>
-                                    <li><a href="{% url 'wishlist' %}">Wishlist</a></li>
-                                    <li><a href="{% url 'checkout' %}">Checkout</a></li>
-                                </ul>  
-
-                            </div>
-
-                            <!-- Footer Widget -->
-                            <div class="footer-widget col-lg-2 col-md-3 col-12 mb-40">
-
-                                <h4 class="widget-title">Categories</h4>
-
-                                <ul>
-                                    <li><a href="{% url 'shop' %}">All Products</a></li>
-                                    <li><a href="{% url 'shop' 1 'Rings' %}">Rings</a></li>
-                                    <li><a href="{% url 'shop' 1 'Necklaces' %}">Necklaces</a></li>
-                                    <li><a href="{% url 'shop' 1 'Bracelets' %}">Bracelets</a></li>
-                                    <li><a href="{% url 'shop' 1 'Earrings' %}">Earrings</a></li>
-                                </ul>  
-
-                            </div>
-
-                            <!-- Footer Widget -->
-                            <div class="footer-widget col-lg-4 col-md-6 col-12 mb-40">
-
-                                <h4 class="widget-title">Contact Us</h4>
-
-                                <ul>
-                                    <li><span>Address:</span> ur address goes here,street Crossroad 123</li>
-                                    <li><span>Phone:</span> +99 859 658 589 . +69 587 456 25</li>
-                                    <li><span>Eax:</span> +55 784 7585 . + 985 698 586</li>
-                                    <li><span>Email:</span> christ@email.com</li>
-                                </ul>  
-
-                            </div>
-
-                        </div>
-                    </div><!-- Footer Top End -->
-                    
-                    <!-- Footer Bottom Start -->
-                    <div class="footer-bottom section text-center">
-                        <p><a href="https://github.com/Areesha06/Jewels-and-Trinkets-Database-Management-System">Github Repository</a></p>
-                    </div><!-- Footer Bottom End -->
-
+                    </div>
                 </div>
+
             </div>
-            
-        </div>
-    </div><!-- Footer Section End-->
-    
+        </div><!-- Footer Section End-->
 
-</div><!-- Main Wrapper End -->
 
-<!-- JS
+    </div><!-- Main Wrapper End -->
+
+    <!-- JS
 ============================================ -->
 
-<!-- jQuery JS -->
-<script src="{% static 'webPages/FrontEnd_ClientView/js/vendor/jquery-1.12.0.min.js' %}"></script>
-<!-- Popper JS -->
-<script src="{% static 'webPages/FrontEnd_ClientView/js/popper.min.js' %}"></script>
-<!-- Bootstrap JS -->
-<script src="{% static 'webPages/FrontEnd_ClientView/js/bootstrap.min.js' %}"></script>
-<!-- Plugins JS -->
-<script src="{% static 'webPages/FrontEnd_ClientView/js/plugins.js' %}"></script>
-<!-- Ajax Mail JS -->
-<script src="{% static 'webPages/FrontEnd_ClientView/js/ajax-mail.js' %}"></script>
-<!-- Main JS -->
-<script src="{% static 'webPages/FrontEnd_ClientView/js/main.js' %}"></script>
+    <!-- jQuery JS -->
+    <script src="{% static 'webPages/FrontEnd_ClientView/js/vendor/jquery-1.12.0.min.js' %}"></script>
+    <!-- Popper JS -->
+    <script src="{% static 'webPages/FrontEnd_ClientView/js/popper.min.js' %}"></script>
+    <!-- Bootstrap JS -->
+    <script src="{% static 'webPages/FrontEnd_ClientView/js/bootstrap.min.js' %}"></script>
+    <!-- Plugins JS -->
+    <script src="{% static 'webPages/FrontEnd_ClientView/js/plugins.js' %}"></script>
+    <!-- Ajax Mail JS -->
+    <script src="{% static 'webPages/FrontEnd_ClientView/js/ajax-mail.js' %}"></script>
+    <!-- Main JS -->
+    <script src="{% static 'webPages/FrontEnd_ClientView/js/main.js' %}"></script>
 </body>
 
 </html>

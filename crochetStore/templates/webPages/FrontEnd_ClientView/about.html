@@ -2,39 +2,44 @@
 {% load static %}
 
 {% block element %}
-       
+
 <!-- Page Banner Section Start-->
-<div class="page-banner-section section" style="background-image: url('{% static 'webPages/FrontEnd_ClientView/img/bg/page-banner.jpg' %}')">
+<div class="page-banner-section section"
+    style="background-image: url('{% static 'webPages/FrontEnd_ClientView/img/bg/page-banner.jpg' %}')">
     <div class="container">
         <div class="row">
-            
+
             <!-- Page Title Start -->
             <div class="page-title text-center col">
                 <h1>About us</h1>
             </div><!-- Page Title End -->
-            
+
         </div>
     </div>
 </div><!-- Page Banner Section End-->
 
-    
+
 <!-- About Section Start-->
 <div class="about-section section pt-120 pb-90">
     <div class="container">
         <div class="row flex-row-reverse">
-            
+
             <!-- About Image -->
             <div class="about-image col-lg-6 col-12 mb-30">
-                <a class="video-popup" href="https://www.youtube.com/watch?v=7e90gBu4pas"><img src="{% static 'webPages/FrontEnd_ClientView/img/about.jpg' %}" alt=""></a>
+                <a class="video-popup" href="https://www.youtube.com/watch?v=7e90gBu4pas"><img
+                        src="{% static 'webPages/FrontEnd_ClientView/img/about.jpg' %}" alt=""></a>
             </div>
-            
+
             <!-- Mission Content -->
             <div class="about-content col-lg-6 col-12 mb-30">
-                <h2>About <span>Christ</span></h2>
-                <p>There are many variations of passages of Lorem Ipsum available, majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly kn je believable There are manations of passages of Lorem Ipsum available, but the majority ahave suffered ami tar cholnay vulbo na alte ration. majority have suffered alteration in</p>
-                <a href="#" class="button">Shop Now</a>
+                <h2>About <span>PCPartsHub</span></h2>
+                <p>PCPartsHub is your premier destination for the latest and greatest in computer hardware. Whether you
+                    are building from scratch, upgrading your current rig, or just looking for the best performance
+                    peripherals, we have you covered. Our mission is to provide high-quality PC components to
+                    enthusiasts, gamers, and professionals alike.</p>
+                <a href="{% url 'shop' %}" class="button">Shop Now</a>
             </div>
-            
+
         </div>
     </div>
 </div><!-- About Section End-->
@@ -42,13 +47,13 @@
 <!-- Team Section Start-->
 <div class="team-section section pb-120">
     <div class="container">
-        
+
         <div class="row">
             <div class="section-title text-center col mb-60">
                 <h1>Our Team</h1>
             </div>
         </div>
-        
+
         <div class="team-wrapper row">
 
             <div class="single-team col-lg-3 col-md-6 col-12">
@@ -84,7 +89,7 @@
             </div>
 
         </div>
-        
+
     </div>
 </div><!-- Team Section End-->
 
@@ -92,7 +97,7 @@
 <div class="funfact-section section pb-90">
     <div class="container">
         <div class="row">
-            
+
             <!-- Single Fact -->
             <div class="single-fact text-center col-sm-3 col-6 mb-30">
                 <div class="wrap">
@@ -101,7 +106,7 @@
                     <p>Happy Clients</p>
                 </div>
             </div>
-            
+
             <!-- Single Fact -->
             <div class="single-fact text-center col-sm-3 col-6 mb-30">
                 <div class="wrap">
@@ -110,7 +115,7 @@
                     <p>Award Winning</p>
                 </div>
             </div>
-            
+
             <!-- Single Fact -->
             <div class="single-fact text-center col-sm-3 col-6 mb-30">
                 <div class="wrap">
@@ -119,7 +124,7 @@
                     <p>Project Done</p>
                 </div>
             </div>
-            
+
             <!-- Single Fact -->
             <div class="single-fact text-center col-sm-3 col-6 mb-30">
                 <div class="wrap">
@@ -128,7 +133,7 @@
                     <p>Cups of Coffee</p>
                 </div>
             </div>
-            
+
         </div>
     </div>
 </div><!-- Funfact Section End-->
@@ -138,23 +143,28 @@
     <div class="container">
         <div class="row">
             <div class="col">
-                
+
                 <div class="client-slider text-center">
-                    
+
                     <!-- Single Client -->
-                    <div class="single-client"><img src="{% static 'webPages/FrontEnd_ClientView/img/client/1.png' %}" alt="client"></div>
-                    <div class="single-client"><img src="{% static 'webPages/FrontEnd_ClientView/img/client/2.png' %}" alt="client"></div>
-                    <div class="single-client"><img src="{% static 'webPages/FrontEnd_ClientView/img/client/3.png' %}" alt="client"></div>
-                    <div class="single-client"><img src="{% static 'webPages/FrontEnd_ClientView/img/client/4.png' %}" alt="client"></div>
-                    <div class="single-client"><img src="{% static 'webPages/FrontEnd_ClientView/img/client/5.png' %}" alt="client"></div>
-                    <div class="single-client"><img src="{% static 'webPages/FrontEnd_ClientView/img/client/6.png' %}" alt="client"></div>
-                    
+                    <div class="single-client"><img src="{% static 'webPages/FrontEnd_ClientView/img/client/1.png' %}"
+                            alt="client"></div>
+                    <div class="single-client"><img src="{% static 'webPages/FrontEnd_ClientView/img/client/2.png' %}"
+                            alt="client"></div>
+                    <div class="single-client"><img src="{% static 'webPages/FrontEnd_ClientView/img/client/3.png' %}"
+                            alt="client"></div>
+                    <div class="single-client"><img src="{% static 'webPages/FrontEnd_ClientView/img/client/4.png' %}"
+                            alt="client"></div>
+                    <div class="single-client"><img src="{% static 'webPages/FrontEnd_ClientView/img/client/5.png' %}"
+                            alt="client"></div>
+                    <div class="single-client"><img src="{% static 'webPages/FrontEnd_ClientView/img/client/6.png' %}"
+                            alt="client"></div>
+
                 </div>
-                
+
             </div>
         </div>
     </div>
 </div><!-- Client Section End-->
 
 {% endblock %}
-  

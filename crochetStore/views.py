@@ -167,6 +167,11 @@ def myaccount(request):
                 messages.error(request, "Password and confirm password do not match.")
                 return redirect("login")
 
+            import re
+            if len(password) <= 8 or not re.search(r"\d", password) or not re.search(r"[a-zA-Z]", password) or not re.search(r"[\W_]", password):
+                messages.error(request, "Password must be > 8 characters, with at least 1 number, 1 letter, and 1 special character.")
+                return redirect("login")
+
             user_id = register_user_if_new(name, email, password, phone or None)
             if user_id is None:
                 messages.error(request, "An account with this email already exists.")

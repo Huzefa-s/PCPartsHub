@@ -4,7 +4,8 @@
 {% block element %}
 
 <!-- Page Banner Section Start -->
-<div class="page-banner-section section" style="background-image: url('{% static 'webPages/FrontEnd_ClientView/img/bg/page-banner.jpg' %}')">
+<div class="page-banner-section section"
+    style="background-image: url('{% static 'webPages/FrontEnd_ClientView/img/bg/page-banner.jpg' %}')">
     <div class="container">
         <div class="row">
             <div class="page-title text-center col">
@@ -23,7 +24,8 @@
                 <div class="login-register-wrapper">
                     <div class="panel single-accordion">
 
-                        <a class="accordion-head" data-toggle="collapse" data-parent="#checkout-accordion" href="#checkout-method">Fill your requirements</a>
+                        <a class="accordion-head" data-toggle="collapse" data-parent="#checkout-accordion"
+                            href="#checkout-method">Fill your requirements</a>
 
                         <div id="checkout-method" class="collapse show">
                             <div class="checkout-method accordion-body fix">
@@ -47,7 +49,7 @@
                                         </div>
                                     </div>
                                 </form>
-                                
+
 
                                 <form action="{% url 'myaccount' %}" method="post" class="checkout-register-form">
                                     {% csrf_token %}
@@ -59,10 +61,12 @@
                                             <input type="email" name="reg_email" placeholder="Email Address">
                                         </div>
                                         <div class="input-box col-md-6 col-12 mb-20">
-                                            <input type="password" name="reg_password" placeholder="Password">
+                                            <input type="password" name="reg_password"
+                                                placeholder="Password (>8 chars, 1 num, 1 letter, 1 special char)">
                                         </div>
                                         <div class="input-box col-md-6 col-12 mb-20">
-                                            <input type="password" name="reg_confirm_password" placeholder="Confirm Password">
+                                            <input type="password" name="reg_confirm_password"
+                                                placeholder="Confirm Password">
                                         </div>
                                         <div class="input-box col-md-6 col-12 mb-20">
                                             <input type="text" name="reg_phone" placeholder="Phone Number (optional)">
@@ -72,7 +76,7 @@
                                         </div>
                                     </div>
                                 </form>
-                                
+
 
                             </div>
                         </div>
