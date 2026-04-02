@@ -1134,12 +1134,12 @@
                     {% csrf_token %}
                     <input type="hidden" name="order_id" value="{{ order.order_id }}">
                     <select name="status">
-                      <option value="Processing" {% if order.order_status=='Processing' %}selected{% endif %}>Processing
+                      <option value="Processing" {% if order.order_status == 'Processing' %}selected{% endif %}>Processing
                       </option>
-                      <option value="Shipped" {% if order.order_status=='Shipped' %}selected{% endif %}>Shipped</option>
-                      <option value="Delivered" {% if order.order_status=='Delivered' %}selected{% endif %}>Delivered
+                      <option value="Shipped" {% if order.order_status == 'Shipped' %}selected{% endif %}>Shipped</option>
+                      <option value="Delivered" {% if order.order_status == 'Delivered' %}selected{% endif %}>Delivered
                       </option>
-                      <option value="Cancelled" {% if order.order_status=='Cancelled' %}selected{% endif %}>Cancelled
+                      <option value="Cancelled" {% if order.order_status == 'Cancelled' %}selected{% endif %}>Cancelled
                       </option>
                     </select>
                     <button type="submit" class="btn btn-primary btn-sm">Save</button>
@@ -1203,13 +1203,13 @@
                       {% csrf_token %}
                       <input type="hidden" name="order_id" value="{{ order.order_id }}">
                       <select name="status">
-                        <option value="Processing" {% if order.order_status=='Processing' %}selected{% endif %}>
+                        <option value="Processing" {% if order.order_status == 'Processing' %}selected{% endif %}>
                           Processing</option>
-                        <option value="Shipped" {% if order.order_status=='Shipped' %}selected{% endif %}>Shipped
+                        <option value="Shipped" {% if order.order_status == 'Shipped' %}selected{% endif %}>Shipped
                         </option>
-                        <option value="Delivered" {% if order.order_status=='Delivered' %}selected{% endif %}>Delivered
+                        <option value="Delivered" {% if order.order_status == 'Delivered' %}selected{% endif %}>Delivered
                         </option>
-                        <option value="Cancelled" {% if order.order_status=='Cancelled' %}selected{% endif %}>Cancelled
+                        <option value="Cancelled" {% if order.order_status == 'Cancelled' %}selected{% endif %}>Cancelled
                         </option>
                       </select>
                       <button type="submit" class="btn btn-primary btn-sm">Save</button>
@@ -1340,41 +1340,45 @@
               </tr>
             </thead>
             <tbody>
+              
               {% for u in users %}
-              <tr>
-                <td>
-                  <div style="display:flex;align-items:center;gap:10px;">
-                    <div class="user-avatar" style="width:32px;height:32px;font-size:13px;background:var(--blue);">
-                      {{ u.name|slice:":1"|upper }}
-                    </div>
-                    {{ u.name }}
-                  </div>
-                </td>
-                <td>{{ u.email }}</td>
-                <td>{{ u.phone|default:"—" }}</td>
-                <td>
-                  {% if u.role == 'admin' %}
-                  <span class="status-pill" style="background:var(--accent-lt);color:var(--accent);">Admin</span>
-                  {% elif u.role == 'staff' %}
-                  <span class="status-pill" style="background:var(--blue-lt);color:var(--blue);">Staff</span>
-                  {% else %}
-                  <span class="status-pill" style="background:var(--green-lt);color:var(--green);">Customer</span>
-                  {% endif %}
-                </td>
-                <td>
-                  <button class="btn btn-ghost btn-sm btn-edit-user" data-user-id="{{ u.user_id }}"
-                    data-user-name="{{ u.name }}" data-user-email="{{ u.email }}" data-user-role="{{ u.role }}"
-                    data-user-phone="{{ u.phone|default:'' }}">
-                    <i class="fa fa-pencil"></i> Edit
-                  </button>
-                </td>
-              </tr>
-              {% empty %}
+                {% if u.name != 'hello' %}
+                  <tr>
+                    <td>
+                      <div style="display:flex;align-items:center;gap:10px;">
+                        <div class="user-avatar" style="width:32px;height:32px;font-size:13px;background:var(--blue);">
+                          {{ u.name|slice:":1"|upper }}
+                        </div>
+                        {{ u.name }}
+                      </div>
+                    </td>
+                    <td>{{ u.email }}</td>
+                    <td>{{ u.phone|default:"—" }}</td>
+                    <td>
+                      {% if u.role == 'admin' %}
+                      <span class="status-pill" style="background:var(--accent-lt);color:var(--accent);">Admin</span>
+                      {% elif u.role == 'staff' %}
+                      <span class="status-pill" style="background:var(--blue-lt);color:var(--blue);">Staff</span>
+                      {% else %}
+                      <span class="status-pill" style="background:var(--green-lt);color:var(--green);">Customer</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      <button class="btn btn-ghost btn-sm btn-edit-user" data-user-id="{{ u.user_id }}"
+                        data-user-name="{{ u.name }}" data-user-email="{{ u.email }}" data-user-role="{{ u.role }}"
+                        data-user-phone="{{ u.phone|default:'' }}">
+                        <i class="fa fa-pencil"></i> Edit
+                      </button>
+                    </td>
+                  </tr>
+                {% endif %}
+              {% endfor %}
+              {% if users|length == 1 %}
               <tr class="empty-row">
                 <td colspan="5"><i class="fa fa-users fa-2x" style="display:block;margin:0 auto 8px;opacity:.3;"></i>No
                   users found.</td>
               </tr>
-              {% endfor %}
+              {% endif %}
             </tbody>
           </table>
         </div>

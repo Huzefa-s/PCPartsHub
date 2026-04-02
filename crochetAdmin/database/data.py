@@ -569,7 +569,8 @@ def get_all_orders():
         SELECT
             o.*,
             COALESCE(u.name,  'Deleted User') AS customer_name,
-            COALESCE(u.email, '')              AS customer_email
+            COALESCE(u.email, '')              AS customer_email,
+            o.order_status AS order_status
         FROM Orders o
         LEFT JOIN Users u ON o.user_id = u.user_id
         ORDER BY o.order_date DESC

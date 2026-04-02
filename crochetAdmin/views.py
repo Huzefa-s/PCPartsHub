@@ -67,6 +67,7 @@ def dashboard(request):
         "user_id":         user_id,
         "username":        request.session.get("username", ""),
     }
+
     return render(request, "admin_ui.html", context)
 
 
