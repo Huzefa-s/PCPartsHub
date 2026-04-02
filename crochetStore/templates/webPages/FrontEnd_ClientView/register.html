@@ -1,0 +1,528 @@
+{% extends "webPages/FrontEnd_ClientView/siteContainer.html" %}
+{% load static %}
+
+{% block element %}
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+
+
+
+  .auth-card {
+    background: #161616;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 2px;
+    padding: 56px 52px;
+    position: relative;
+    max-width: 580px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .auth-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #c9a352, transparent);
+  }
+
+  .auth-eyebrow {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #c9a352;
+    margin-bottom: 12px;
+  }
+
+  .auth-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 36px;
+    font-weight: 800;
+    color: #f5f0e8;
+    line-height: 1.1;
+    margin-bottom: 8px;
+    letter-spacing: -1px;
+  }
+
+  .auth-subtitle {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 40px;
+    font-weight: 300;
+  }
+
+  /* Error / Success alerts */
+  .auth-alerts {
+    margin-bottom: 28px;
+  }
+
+  .alert-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 2px;
+    margin-bottom: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .alert-item:last-child { margin-bottom: 0; }
+
+  .alert-error {
+    background: rgba(220, 60, 60, 0.1);
+    border: 1px solid rgba(220, 60, 60, 0.25);
+    color: #f08080;
+  }
+
+  .alert-success {
+    background: rgba(80, 180, 100, 0.1);
+    border: 1px solid rgba(80, 180, 100, 0.25);
+    color: #80c880;
+  }
+
+  .alert-icon {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    margin-top: 1px;
+  }
+
+  /* Inline field error */
+  .field-error {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    color: #f08080;
+    margin-top: 5px;
+    display: none;
+  }
+
+  .field-error.visible { display: block; }
+
+  /* Form grid */
+  .auth-form .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 20px;
+  }
+
+  @media (max-width: 520px) {
+    .auth-form .form-grid { grid-template-columns: 1fr; }
+    .auth-card { padding: 36px 24px; }
+  }
+
+  .auth-form .field-group {
+    margin-bottom: 20px;
+  }
+
+  .auth-form .field-group.full-width {
+    grid-column: 1 / -1;
+  }
+
+  .auth-form label {
+    display: block;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 8px;
+  }
+
+  .auth-form input[type="email"],
+  .auth-form input[type="password"],
+  .auth-form input[type="text"] {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 2px;
+    padding: 14px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: #f5f0e8;
+    transition: border-color 0.2s, background 0.2s;
+    outline: none;
+    box-sizing: border-box;
+  }
+
+  .auth-form input:focus {
+    border-color: rgba(201, 163, 82, 0.5);
+    background: rgba(201, 163, 82, 0.04);
+  }
+
+  .auth-form input.input-invalid {
+    border-color: rgba(220, 60, 60, 0.5) !important;
+  }
+
+  .auth-form input.input-valid {
+    border-color: rgba(80, 180, 100, 0.4);
+  }
+
+  .auth-form input::placeholder {
+    color: rgba(255,255,255,0.18);
+  }
+
+  /* Password strength bar */
+  .password-strength {
+    margin-top: 8px;
+  }
+
+  .strength-bar {
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.06);
+    overflow: hidden;
+    margin-bottom: 5px;
+  }
+
+  .strength-fill {
+    height: 100%;
+    border-radius: 2px;
+    width: 0%;
+    transition: width 0.3s ease, background 0.3s ease;
+  }
+
+  .strength-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    color: rgba(255,255,255,0.25);
+    letter-spacing: 0.5px;
+  }
+
+  /* Password rules checklist */
+  .password-rules {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .rule {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    color: rgba(255,255,255,0.25);
+    transition: color 0.2s;
+  }
+
+  .rule.met { color: #80c880; }
+
+  .rule-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    flex-shrink: 0;
+    transition: background 0.2s;
+  }
+
+  .rule.met .rule-dot { background: #80c880; }
+
+  /* Phone optional tag */
+  .optional-tag {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    color: rgba(255,255,255,0.2);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-left: 6px;
+    font-weight: 400;
+  }
+
+  .btn-register {
+    width: 100%;
+    padding: 15px;
+    background: #c9a352;
+    border: none;
+    border-radius: 2px;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #0d0d0d;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    margin-top: 8px;
+  }
+
+  .btn-register:hover { background: #d4b06a; }
+  .btn-register:active { transform: scale(0.99); }
+
+  .auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 28px 0;
+  }
+
+  .auth-divider span {
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.06);
+  }
+
+  .auth-divider p {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    color: rgba(255,255,255,0.2);
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  .btn-login-link {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 2px;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    text-align: center;
+    text-decoration: none;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .btn-login-link:hover {
+    border-color: rgba(201, 163, 82, 0.4);
+    color: #c9a352;
+    text-decoration: none;
+  }
+
+  .page-banner-section { padding: 60px 0 !important; }
+  .page-banner-section h1 { font-family: 'Syne', sans-serif; }
+  
+
+</style>
+
+<!-- Auth Section -->
+
+
+<div class="auth-section">
+  <div class="container" style="background-color: #eff2f5;">
+    <div class="auth-card">
+
+      <p class="auth-eyebrow">New here?</p>
+      <h1 class="auth-title">Create account.</h1>
+      <p class="auth-subtitle">Join us — it only takes a minute.</p>
+
+      <!-- Django messages -->
+      {% if messages %}
+      <div class="auth-alerts">
+        {% for message in messages %}
+          <div class="alert-item {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+            {% if message.tags == 'error' %}
+            <svg class="alert-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="8" cy="8" r="7" stroke="#f08080" stroke-width="1.5"/>
+              <path d="M8 4.5V8.5" stroke="#f08080" stroke-width="1.5" stroke-linecap="round"/>
+              <circle cx="8" cy="11" r="0.75" fill="#f08080"/>
+            </svg>
+            {% else %}
+            <svg class="alert-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="8" cy="8" r="7" stroke="#80c880" stroke-width="1.5"/>
+              <path d="M5 8L7 10L11 6" stroke="#80c880" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            {% endif %}
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <form action="{% url 'register_submit' %}" method="post" class="auth-form" id="register-form" novalidate>
+        {% csrf_token %}
+
+        <div class="form-grid">
+
+          <div class="field-group">
+            <label for="reg_name">Full Name</label>
+            <input type="text" id="reg_name" name="reg_name"
+                   placeholder="Jane Smith"
+                   value="{{ form_data.reg_name|default:'' }}"
+                   autocomplete="name">
+            <p class="field-error" id="err-name">Name is required.</p>
+          </div>
+
+          <div class="field-group">
+            <label for="reg_email">Email Address</label>
+            <input type="email" id="reg_email" name="reg_email"
+                   placeholder="you@example.com"
+                   value="{{ form_data.reg_email|default:'' }}"
+                   autocomplete="email">
+            <p class="field-error" id="err-email">Please enter a valid email address.</p>
+          </div>
+
+          <div class="field-group">
+            <label for="reg_password">Password</label>
+            <input type="password" id="reg_password" name="reg_password"
+                   placeholder="••••••••••"
+                   autocomplete="new-password">
+            <div class="password-strength">
+              <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
+              <span class="strength-label" id="strength-label"></span>
+            </div>
+            <div class="password-rules" id="password-rules">
+              <span class="rule" id="rule-length"><span class="rule-dot"></span>More than 8 characters</span>
+              <span class="rule" id="rule-letter"><span class="rule-dot"></span>At least 1 letter</span>
+              <span class="rule" id="rule-number"><span class="rule-dot"></span>At least 1 number</span>
+              <span class="rule" id="rule-special"><span class="rule-dot"></span>At least 1 special character</span>
+            </div>
+            <p class="field-error" id="err-password">Password does not meet requirements.</p>
+          </div>
+
+          <div class="field-group">
+            <label for="reg_confirm_password">Confirm Password</label>
+            <input type="password" id="reg_confirm_password" name="reg_confirm_password"
+                   placeholder="••••••••••"
+                   autocomplete="new-password">
+            <p class="field-error" id="err-confirm">Passwords do not match.</p>
+          </div>
+
+          <div class="field-group full-width">
+            <label for="reg_phone">Phone Number <span class="optional-tag">Optional</span></label>
+            <input type="text" id="reg_phone" name="reg_phone"
+                   placeholder="+1 234 567 8900"
+                   value="{{ form_data.reg_phone|default:'' }}"
+                   autocomplete="tel">
+            <p class="field-error" id="err-phone">Enter a valid phone number (digits only, 7–15 chars).</p>
+          </div>
+
+        </div>
+
+        <button type="submit" class="btn-register" id="submit-btn">Create Account</button>
+      </form>
+
+      <div class="auth-divider">
+        <span></span><p>Already have an account?</p><span></span>
+      </div>
+
+      <a href="{% url 'login' %}" class="btn-login-link">Sign In</a>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var form = document.getElementById('register-form');
+    var nameInput    = document.getElementById('reg_name');
+    var emailInput   = document.getElementById('reg_email');
+    var pwInput      = document.getElementById('reg_password');
+    var cpwInput     = document.getElementById('reg_confirm_password');
+    var phoneInput   = document.getElementById('reg_phone');
+
+    var strengthFill  = document.getElementById('strength-fill');
+    var strengthLabel = document.getElementById('strength-label');
+
+    var ruleLength  = document.getElementById('rule-length');
+    var ruleLetter  = document.getElementById('rule-letter');
+    var ruleNumber  = document.getElementById('rule-number');
+    var ruleSpecial = document.getElementById('rule-special');
+
+    function showErr(input, errEl) {
+      input.classList.add('input-invalid');
+      input.classList.remove('input-valid');
+      errEl.classList.add('visible');
+    }
+
+    function clearErr(input, errEl) {
+      input.classList.remove('input-invalid');
+      errEl.classList.remove('visible');
+    }
+
+    function markValid(input) {
+      input.classList.remove('input-invalid');
+      input.classList.add('input-valid');
+    }
+
+    // Password rules check
+    function checkPasswordRules(pw) {
+      return {
+        length:  pw.length > 8,
+        letter:  /[a-zA-Z]/.test(pw),
+        number:  /\d/.test(pw),
+        special: /[\W_]/.test(pw),
+      };
+    }
+
+    function updateRule(el, met) {
+      if (met) el.classList.add('met'); else el.classList.remove('met');
+    }
+
+    function updateStrength(pw) {
+      var r = checkPasswordRules(pw);
+      var score = [r.length, r.letter, r.number, r.special].filter(Boolean).length;
+      updateRule(ruleLength, r.length);
+      updateRule(ruleLetter, r.letter);
+      updateRule(ruleNumber, r.number);
+      updateRule(ruleSpecial, r.special);
+
+      var colors = ['#dc3c3c', '#e07840', '#d4b06a', '#80c880'];
+      var labels = ['Weak', 'Fair', 'Good', 'Strong'];
+      if (pw.length === 0) { strengthFill.style.width = '0%'; strengthLabel.textContent = ''; return; }
+      strengthFill.style.width = (score * 25) + '%';
+      strengthFill.style.background = colors[score - 1] || '#dc3c3c';
+      strengthLabel.textContent = labels[score - 1] || '';
+      return r.length && r.letter && r.number && r.special;
+    }
+
+    // Live listeners
+    nameInput.addEventListener('input', function () { clearErr(nameInput, document.getElementById('err-name')); });
+    emailInput.addEventListener('input', function () { clearErr(emailInput, document.getElementById('err-email')); });
+    cpwInput.addEventListener('input', function () { clearErr(cpwInput, document.getElementById('err-confirm')); });
+    phoneInput.addEventListener('input', function () { clearErr(phoneInput, document.getElementById('err-phone')); });
+
+    pwInput.addEventListener('input', function () {
+      clearErr(pwInput, document.getElementById('err-password'));
+      updateStrength(pwInput.value);
+    });
+
+    form.addEventListener('submit', function (e) {
+      var valid = true;
+
+      if (!nameInput.value.trim()) {
+        showErr(nameInput, document.getElementById('err-name')); valid = false;
+      } else { markValid(nameInput); }
+
+      var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailInput.value.trim() || !emailRegex.test(emailInput.value.trim())) {
+        showErr(emailInput, document.getElementById('err-email')); valid = false;
+      } else { markValid(emailInput); }
+
+      var pw = pwInput.value;
+      var rules = checkPasswordRules(pw);
+      if (!rules.length || !rules.letter || !rules.number || !rules.special) {
+        showErr(pwInput, document.getElementById('err-password')); valid = false;
+      } else { markValid(pwInput); }
+
+      if (cpwInput.value !== pw || !cpwInput.value) {
+        showErr(cpwInput, document.getElementById('err-confirm')); valid = false;
+      } else { markValid(cpwInput); }
+
+      var phone = phoneInput.value.trim();
+      if (phone) {
+        var phoneDigits = phone.replace(/[\s\-\+\(\)]/g, '');
+        if (!/^\d{7,15}$/.test(phoneDigits)) {
+          showErr(phoneInput, document.getElementById('err-phone')); valid = false;
+        }
+      }
+
+      if (!valid) e.preventDefault();
+    });
+  })();
+</script>
+
+{% endblock %}

@@ -4,29 +4,34 @@ from django.http import HttpResponse
 
 urlpatterns = [
     path("", views.index, name="index"),
-    
+
     path("about/<str:complain>/", views.about, name="about"),
     path("about/", views.about, name="about"),
-    
 
-
+    # ---------- Auth ----------
+    # Login: GET → show page, POST → login_submit handles form
     path("login/", views.login, name="login"),
+    path("login/submit/", views.login_submit, name="login_submit"),
 
+    # Register: GET → show page, POST → register_submit handles form
+    path("register/", views.register, name="register"),
+    path("register/submit/", views.register_submit, name="register_submit"),
+
+    path("logout/", views.logout_view, name="logout"),
+
+    # ---------- My Account ----------
     path("myaccount/", views.myaccount, name="myaccount"),
     path("myaccount/addresses/", views.manage_addresses, name="manage_addresses"),
     path("myaccount/payment/", views.manage_payment_method, name="manage_payment_method"),
+    path("update_profile/", views.update_profile, name="update_profile"),
 
-    path('logout/', views.logout_view, name='logout'),
-
-    path('update_profile/', views.update_profile, name='update_profile'),
-
-   
+    # ---------- Utility ----------
     path("under-construction/", views.under_construction, name="under_construction"),
 
 
-
+    # =====================================================================
     # TO DO IN FUTURE
-
+    # =====================================================================
 
     path("shop/<int:current_page>/<str:category>/<str:subcategory>/",
          lambda request, current_page, category, subcategory:
@@ -44,13 +49,11 @@ urlpatterns = [
          name="shop"),
 
     path("shop/",
-         lambda request:
-         HttpResponse("<h1>shop</h1>"),
+         lambda request: HttpResponse("<h1>shop</h1>"),
          name="shop"),
 
     path("cart/",
-         lambda request:
-         HttpResponse("<h1>cart</h1>"),
+         lambda request: HttpResponse("<h1>cart</h1>"),
          name="cart"),
 
     path("cart/add/<int:product_id>/",
@@ -64,8 +67,7 @@ urlpatterns = [
          name="product_detail"),
 
     path("wishlist/",
-         lambda request:
-         HttpResponse("<h1>wishlist</h1>"),
+         lambda request: HttpResponse("<h1>wishlist</h1>"),
          name="wishlist"),
 
     path("wishlist/add/<int:product_id>/",
@@ -74,8 +76,6 @@ urlpatterns = [
          name="add_to_wishlist"),
 
     path("checkout/",
-         lambda request:
-         HttpResponse("<h1>checkout</h1>"),
+         lambda request: HttpResponse("<h1>checkout</h1>"),
          name="checkout"),
-
 ]

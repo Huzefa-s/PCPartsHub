@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.contrib import messages
 import base64
 import math
+import re
 
 from .database.data import (
     custom_sql_select,
@@ -18,10 +19,13 @@ from .database.data import (
     link_user_address,
     delete_user_address,
     get_user_orders,
+    get_user_by_email,   # ensure this exists in data.py – returns user dict or None
 )
 
-# Create your views here.
 
+# ---------------------------------------------------------------------------
+# Session helpers
+# ---------------------------------------------------------------------------
 
 SESSION_DEFAULTS = {
     "login_status": False,
@@ -35,62 +39,71 @@ SESSION_DEFAULTS = {
 
 
 def _ensure_session_defaults(request):
-    """
-    Guarantee all user-related keys exist in the session.
-    """
     for key, value in SESSION_DEFAULTS.items():
         request.session.setdefault(key, value)
 
 
 def _session_user_context(request):
-    """
-    Build a per-request user context dictionary from the session.
-    """
     _ensure_session_defaults(request)
 
-    # If we have a logged-in user, refresh their data from the database
     user_id = request.session.get("user_id")
     if request.session.get("login_status") and user_id:
         latest_user = get_user_by_id(user_id)
         if latest_user:
             _populate_session_from_user(request, latest_user)
         else:
-            # User no longer exists; clear login-related session data
-            request.session["login_status"] = False
-            request.session["user_id"] = 0
-            request.session["username"] = ""
-            request.session["email"] = ""
-            request.session["phone"] = ""
-            request.session["role"] = ""
-            request.session["created_at"] = ""
+            for key, value in SESSION_DEFAULTS.items():
+                request.session[key] = value
 
     return {
         "is_authenticated": request.session["login_status"],
-        "userID": request.session["user_id"],
-        "username": request.session["username"],
-        "email": request.session["email"],
-        "phone": request.session["phone"],
-        "role": request.session["role"],
-        "created_at": request.session["created_at"],
+        "userID":           request.session["user_id"],
+        "username":         request.session["username"],
+        "email":            request.session["email"],
+        "phone":            request.session["phone"],
+        "role":             request.session["role"],
+        "created_at":       request.session["created_at"],
     }
 
 
 def _populate_session_from_user(request, user_row):
-    """
-    Persist database user fields into the session.
-    """
     request.session["login_status"] = True
-    request.session["user_id"] = user_row.get("user_id", 0)
-    request.session["username"] = user_row.get("name", "")
-    request.session["email"] = user_row.get("email", "")
-    request.session["phone"] = user_row.get("phone", "")
-    request.session["role"] = user_row.get("role", "")
-    request.session["created_at"] = str(user_row.get("created_at", ""))
+    request.session["user_id"]      = user_row.get("user_id", 0)
+    request.session["username"]     = user_row.get("name", "")
+    request.session["email"]        = user_row.get("email", "")
+    request.session["phone"]        = user_row.get("phone", "")
+    request.session["role"]         = user_row.get("role", "")
+    request.session["created_at"]   = str(user_row.get("created_at", ""))
 
+
+# ---------------------------------------------------------------------------
+# Password validation helper
+# ---------------------------------------------------------------------------
+
+def _validate_password(password):
+    """
+    Returns a list of error strings.
+    Empty list means the password is valid.
+    Rules: length > 8, at least 1 letter, 1 number, 1 special character.
+    """
+    errors = []
+    if len(password) <= 8:
+        errors.append("Password must be more than 8 characters.")
+    if not re.search(r"[a-zA-Z]", password):
+        errors.append("Password must contain at least one letter.")
+    if not re.search(r"\d", password):
+        errors.append("Password must contain at least one number.")
+    if not re.search(r"[\W_]", password):
+        errors.append("Password must contain at least one special character.")
+    return errors
+
+
+# ---------------------------------------------------------------------------
+# Public pages
+# ---------------------------------------------------------------------------
 
 def index(request):
     user_ctx = _session_user_context(request)
-    # Load a small set of featured products for the homepage
     products = fetch_items()[:6]
 
     for item in products:
@@ -102,112 +115,198 @@ def index(request):
     return render(
         request,
         "webPages/FrontEnd_ClientView/index.html",
-        {
-            "user": user_ctx,
-            "featured_products": products,
-        },
+        {"user": user_ctx, "featured_products": products},
     )
 
 
-
-
-
-def about(request, complain = ''):
+def about(request, complain=""):
     user_ctx = _session_user_context(request)
 
-    if complain != '':
-        result = custom_sql_select(f'''
-                                   
-            SELECT * FROM Complaint
-        
-        ''')
+    if complain:
+        result = custom_sql_select("SELECT * FROM Complaint")
         return HttpResponse(str(result))
-    else:
-        return render(request, "webPages/FrontEnd_ClientView/about.html", {
-            "user": user_ctx
-        })
+
+    return render(request, "webPages/FrontEnd_ClientView/about.html", {"user": user_ctx})
 
 
-
+# ---------------------------------------------------------------------------
+# Login
+# ---------------------------------------------------------------------------
 
 def login(request):
+    """
+    GET  → render login page
+    POST → handled by login_submit
+    """
     user_ctx = _session_user_context(request)
+    if user_ctx["is_authenticated"]:
+        return redirect("myaccount")
+
     return render(
         request,
-        "webPages/FrontEnd_ClientView/login-register.html",
-        {
-            "user": user_ctx,
-        },
+        "webPages/FrontEnd_ClientView/login.html",
+        {"user": user_ctx},
     )
 
-def myaccount(request):
-    if request.method == "POST":
-        if "login_submit" in request.POST:
-            email = request.POST.get("login_email", "").strip()
-            password = request.POST.get("login_password", "").strip()
 
-            login_data = login_sql_select(email, password)
+def login_submit(request):
+    """
+    Handles POST from login.html.
+    On success  → redirect to myaccount
+    On failure  → redirect back to login with an error message
+    """
+    if request.method != "POST":
+        return redirect("login")
 
-            if login_data and isinstance(login_data, dict):
-                _populate_session_from_user(request, login_data)
-                messages.success(request, "Logged in successfully.")
-                return redirect("myaccount")
+    email    = request.POST.get("login_email", "").strip()
+    password = request.POST.get("login_password", "").strip()
 
-            messages.error(request, "Invalid email or password.")
-            return redirect("login")
+    # Basic server-side presence check
+    if not email or not password:
+        messages.error(request, "Email and password are required.")
+        return redirect("login")
 
-        elif "register_submit" in request.POST:
-            name = request.POST.get("reg_name", "").strip()
-            email = request.POST.get("reg_email", "").strip()
-            password = request.POST.get("reg_password", "").strip()
-            confirm_password = request.POST.get("reg_confirm_password", "").strip()
-            phone = request.POST.get("reg_phone", "").strip()
+    login_data = login_sql_select(email, password)
 
-            if password != confirm_password:
-                messages.error(request, "Password and confirm password do not match.")
-                return redirect("login")
+    if login_data and isinstance(login_data, dict):
+        _populate_session_from_user(request, login_data)
+        messages.success(request, "Logged in successfully.")
+        return redirect("myaccount")
 
-            import re
-            if len(password) <= 8 or not re.search(r"\d", password) or not re.search(r"[a-zA-Z]", password) or not re.search(r"[\W_]", password):
-                messages.error(request, "Password must be > 8 characters, with at least 1 number, 1 letter, and 1 special character.")
-                return redirect("login")
+    messages.error(request, "Incorrect email or password. Please try again.")
+    return redirect("login")
 
-            user_id = register_user_if_new(name, email, password, phone or None)
-            if user_id is None:
-                messages.error(request, "An account with this email already exists.")
-                return redirect("login")
 
-            login_data = login_sql_select(email, password)
-            if login_data and isinstance(login_data, dict):
-                _populate_session_from_user(request, login_data)
-                messages.success(request, "Account created and logged in.")
-                return redirect("myaccount")
+# ---------------------------------------------------------------------------
+# Register
+# ---------------------------------------------------------------------------
 
-            messages.error(request, "Registration failed, please try again.")
-            return redirect("login")
-
+def register(request):
+    """
+    GET  → render register page
+    POST → handled by register_submit
+    """
     user_ctx = _session_user_context(request)
+    if user_ctx["is_authenticated"]:
+        return redirect("myaccount")
+
+    return render(
+        request,
+        "webPages/FrontEnd_ClientView/register.html",
+        {"user": user_ctx},
+    )
+
+
+def register_submit(request):
+    """
+    Handles POST from register.html.
+    Validates all fields server-side, including:
+      - unique email (username)
+      - password strength rules
+      - password confirmation match
+    """
+    if request.method != "POST":
+        return redirect("register")
+
+    name             = request.POST.get("reg_name", "").strip()
+    email            = request.POST.get("reg_email", "").strip()
+    password         = request.POST.get("reg_password", "").strip()
+    confirm_password = request.POST.get("reg_confirm_password", "").strip()
+    phone            = request.POST.get("reg_phone", "").strip() or None
+
+    # Collect all errors so we can surface them together
+    errors = []
+
+    if not name:
+        errors.append("Full name is required.")
+
+    if not email:
+        errors.append("Email address is required.")
+    elif not re.match(r"^[^\s@]+@[^\s@]+\.[^\s@]+$", email):
+        errors.append("Please enter a valid email address.")
+
+    if not password:
+        errors.append("Password is required.")
+    else:
+        pw_errors = _validate_password(password)
+        errors.extend(pw_errors)
+
+    if password and not errors:  # only check match if password itself is valid
+        if password != confirm_password:
+            errors.append("Password and confirm password do not match.")
+
+    if phone:
+        phone_digits = re.sub(r"[\s\-\+\(\)]", "", phone)
+        if not re.match(r"^\d{7,15}$", phone_digits):
+            errors.append("Phone number must contain 7–15 digits.")
+
+    # Unique email / username check
+    if email and not errors:
+        existing = get_user_by_email(email)
+        if existing:
+            errors.append("An account with this email already exists.")
+
+    if errors:
+        for err in errors:
+            messages.error(request, err)
+        # Preserve filled-in data so the user doesn't have to retype
+        request.session["_reg_form_data"] = {
+            "reg_name":  name,
+            "reg_email": email,
+            "reg_phone": phone or "",
+        }
+        return redirect("register")
+
+    # All good — create the account
+    user_id = register_user_if_new(name, email, password, phone)
+    if user_id is None:
+        # Race condition: another request registered the same email
+        messages.error(request, "An account with this email already exists.")
+        return redirect("register")
+
+    # Auto-login after registration
+    login_data = login_sql_select(email, password)
+    if login_data and isinstance(login_data, dict):
+        _populate_session_from_user(request, login_data)
+        messages.success(request, "Account created! Welcome aboard.")
+        return redirect("myaccount")
+
+    messages.error(request, "Registration succeeded but auto-login failed. Please log in.")
+    return redirect("login")
+
+
+# ---------------------------------------------------------------------------
+# My Account
+# ---------------------------------------------------------------------------
+
+def myaccount(request):
+    user_ctx = _session_user_context(request)
+
+    if not user_ctx["is_authenticated"]:
+        messages.error(request, "Please log in to access your account.")
+        return redirect("login")
+
     addresses = []
-    orders = []
-    if user_ctx["is_authenticated"] and user_ctx["userID"]:
+    orders    = []
+    if user_ctx["userID"]:
         addresses = get_user_addresses(user_ctx["userID"])
-        orders = get_user_orders(user_ctx["userID"])
+        orders    = get_user_orders(user_ctx["userID"])
 
     context = {
-        "user": user_ctx,
-        "addresses": addresses,
+        "user":                    user_ctx,
+        "addresses":               addresses,
         "preferred_payment_method": request.session.get("preferred_payment_method", ""),
-        "orders": orders,
+        "orders":                  orders,
     }
 
     return render(request, "webPages/FrontEnd_ClientView/my-account.html", context)
 
 
+# ---------------------------------------------------------------------------
+# Address management
+# ---------------------------------------------------------------------------
+
 def manage_addresses(request):
-    """
-    Handle add/remove of user addresses from the My Account page.
-    Uses Address and UserAddress tables as defined in schema.txt.
-    """
     _ensure_session_defaults(request)
     user_id = request.session.get("user_id")
     if not user_id:
@@ -216,9 +315,9 @@ def manage_addresses(request):
 
     if request.method == "POST":
         if "add_address" in request.POST:
-            province = request.POST.get("province", "").strip()
-            city = request.POST.get("city", "").strip()
-            area = request.POST.get("area", "").strip()
+            province     = request.POST.get("province", "").strip()
+            city         = request.POST.get("city", "").strip()
+            area         = request.POST.get("area", "").strip()
             house_number = request.POST.get("houseNumber", "").strip()
 
             if province and city and area and house_number:
@@ -239,11 +338,11 @@ def manage_addresses(request):
     return redirect("myaccount")
 
 
+# ---------------------------------------------------------------------------
+# Payment method
+# ---------------------------------------------------------------------------
+
 def manage_payment_method(request):
-    """
-    Store a user's preferred payment method in the session.
-    This will later be used as a default when creating Orders.paymentMethod.
-    """
     _ensure_session_defaults(request)
     user_id = request.session.get("user_id")
     if not user_id:
@@ -262,22 +361,9 @@ def manage_payment_method(request):
     return redirect("myaccount")
 
 
-def under_construction(request):
-    """
-    Simple view to render the under-construction page.
-    Useful for sections defined in the schema but not yet implemented.
-    """
-    user_ctx = _session_user_context(request)
-    return render(
-        request,
-        "webPages/FrontEnd_ClientView/under-construction.html",
-        {"user": user_ctx},
-    )
-
-
-def logout_view(request):
-    request.session.flush()  # clears all session data
-    return redirect('index')  # redirect to home or login page
+# ---------------------------------------------------------------------------
+# Profile update
+# ---------------------------------------------------------------------------
 
 def update_profile(request):
     if request.method == "POST":
@@ -287,25 +373,47 @@ def update_profile(request):
             messages.error(request, "You must be logged in to update your profile.")
             return redirect("myaccount")
 
-        name = request.POST.get("username")
-        email = request.POST.get("email")
-        phone = request.POST.get("phone")
+        name  = request.POST.get("username", "").strip() or None
+        email = request.POST.get("email", "").strip()    or None
+        phone = request.POST.get("phone", "").strip()    or None
+
+        # If the user is changing email, verify it is not already taken
+        if email and email != request.session.get("email"):
+            existing = get_user_by_email(email)
+            if existing and existing.get("user_id") != user_id:
+                messages.error(request, "That email address is already in use by another account.")
+                return redirect("myaccount")
 
         updated = update_profile_sql(user_id, name=name, email=email, phone=phone)
 
         if updated:
-            # Update session data to reflect new profile
-            if name: request.session["username"] = name
-            if email: request.session["email"] = email
-            if phone: request.session["phone"] = phone
-
+            if name:  request.session["username"] = name
+            if email: request.session["email"]    = email
+            if phone: request.session["phone"]    = phone
             messages.success(request, "Profile updated successfully.")
         else:
             messages.info(request, "No changes were made to your profile.")
 
-        return redirect("myaccount")
-
-    # If GET request, just redirect to account page
     return redirect("myaccount")
 
 
+# ---------------------------------------------------------------------------
+# Logout
+# ---------------------------------------------------------------------------
+
+def logout_view(request):
+    request.session.flush()
+    return redirect("index")
+
+
+# ---------------------------------------------------------------------------
+# Utility
+# ---------------------------------------------------------------------------
+
+def under_construction(request):
+    user_ctx = _session_user_context(request)
+    return render(
+        request,
+        "webPages/FrontEnd_ClientView/under-construction.html",
+        {"user": user_ctx},
+    )
