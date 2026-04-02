@@ -2,7 +2,13 @@ from django.urls import path
 from . import views
 from django.http import HttpResponse
 
+from django.urls import path, include
+
+
+
 urlpatterns = [
+    path('', include('pcpartshubAdmin.urls')),
+
     path("", views.index, name="index"),
 
     path("about/<str:complain>/", views.about, name="about"),

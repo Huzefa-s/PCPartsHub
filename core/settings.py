@@ -31,8 +31,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'crochetStore',
-    'crochetAdmin',
+    'pcpartshubStore',
+    'pcpartshubAdmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -117,8 +117,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 #STATIC_URL = 'static/'
-# STATIC_URL = '/crochetStore/static/'
-# STATIC_ROOT = '/crochetStore/static'
+# STATIC_URL = '/pcpartshubStore/static/'
+# STATIC_ROOT = '/pcpartshubStore/static'
 
 STATIC_URL = 'static/'
 

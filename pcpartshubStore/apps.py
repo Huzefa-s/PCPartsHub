@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class CrochetstoreConfig(AppConfig):
+class PcpartshubstoreConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'crochetStore'
+    name = 'pcpartshubStore'

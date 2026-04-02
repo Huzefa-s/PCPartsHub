@@ -120,6 +120,9 @@
                                     <li><a href="{% url 'shop' %}">shop</a></li>
                                     <li><a href="{% url 'about' %}">about</a></li>
                                     {% endif %}
+                                    {% if user.role == 'staff' or user.role == 'admin' %}
+                                    <li><a href="{% url 'admin_dashboard' %}">Admin</a></li>
+                                    {% endif %}
                                 </ul>
                             </nav>
 
