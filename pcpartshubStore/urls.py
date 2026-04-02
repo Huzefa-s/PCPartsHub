@@ -7,7 +7,7 @@ from django.urls import path, include
 
 
 urlpatterns = [
-    path('', include('pcpartshubAdmin.urls')),
+    path('admin', include('pcpartshubAdmin.urls')),
 
     path("", views.index, name="index"),
 
