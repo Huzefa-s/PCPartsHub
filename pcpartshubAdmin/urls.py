@@ -41,6 +41,11 @@ urlpatterns = [
         name="admin_save_user",
     ),
     path(
+        "users/<int:user_id>/delete/",
+        views.admin_delete_user,
+        name="admin_delete_user",
+    ),
+    path(
         "users/<int:user_id>/details/",
         views.get_user_details,
         name="admin_get_user_details",

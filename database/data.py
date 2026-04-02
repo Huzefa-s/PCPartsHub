@@ -1,6 +1,7 @@
-from django.db import connection
+from django.db import connection, IntegrityError
 import urllib.request
 import base64
+from django.contrib.auth.hashers import make_password, check_password
 
 """
 Data-access helpers for the crochetAdmin app.
@@ -54,12 +55,23 @@ def login_sql_select(email, password):
     Returns the matching user dict, or False if not found.
     """
     with connection.cursor() as cursor:
+        # Fetch user by email only
         cursor.execute(
-            "SELECT * FROM Users WHERE email = %s AND password = %s",
-            [email, password],
+            "SELECT * FROM Users WHERE email = %s",
+            [email],
         )
         rows = _rows_to_dicts(cursor)
-        return rows[0] if rows else False
+
+        if not rows:
+            return False
+
+        user = rows[0]
+
+        # Verify hashed password
+        if check_password(password, user["password"]):
+            return user
+
+        return False
 
 
 def register_sql_insert(name, email, password, phone=None, role="customer"):
@@ -67,13 +79,17 @@ def register_sql_insert(name, email, password, phone=None, role="customer"):
     Insert a new user row into `Users`.
     Returns the new user_id.
     """
+    # Hash password using Django's hasher
+    hashed_password = make_password(password)
+
     with connection.cursor() as cursor:
         cursor.execute(
             "INSERT INTO Users (name, email, password, phone, role) VALUES (%s, %s, %s, %s, %s)",
-            [name, email, password, phone, role],
+            [name, email, hashed_password, phone, role],
         )
         connection.commit()
         return cursor.lastrowid
+
 
 
 def register_user_if_new(name, email, password, phone=None, role="customer"):
@@ -81,9 +97,21 @@ def register_user_if_new(name, email, password, phone=None, role="customer"):
     Insert a user only if the email does not already exist.
     Returns the new user_id, or None if the email is already taken.
     """
-    if get_user_by_email(email):
+    # Hash password before attempting insert
+    hashed_password = make_password(password)
+
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "INSERT INTO Users (name, email, password, phone, role) VALUES (%s, %s, %s, %s, %s)",
+                [name, email, hashed_password, phone, role],
+            )
+            connection.commit()
+            return cursor.lastrowid
+
+    except IntegrityError:
+        # This assumes email has a UNIQUE constraint in DB
         return None
-    return register_sql_insert(name, email, password, phone=phone, role=role)
 
 
 def get_user_by_email(email):

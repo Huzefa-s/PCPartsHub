@@ -119,7 +119,7 @@ def admin_save_product(request):
     can be uploaded.  The raw bytes are written directly to the BLOB
     column in the item table via admin_data.save_product().
     """
-    if request.session.get("role", "").lower() != "admin":
+    if request.session.get("role", "").lower() not in ["admin", "staff"]:
         return redirect("admin_dashboard")
 
     # ── scalar fields ──
@@ -175,13 +175,14 @@ def admin_save_product(request):
 @admin_staff_required
 @require_POST
 def admin_delete_product(request, item_id):
-    """Delete a product.  Admin only."""
-    if request.session.get("role", "").lower() != "admin":
+    """Delete a product."""
+    if request.session.get("role", "").lower() not in ["admin", "staff"]:
         return redirect("admin_dashboard")
 
     admin_data.delete_product(item_id)
     messages.success(request, "Product deleted.")
     return redirect("admin_dashboard")
+
 
 
 @admin_staff_required
@@ -265,6 +266,19 @@ def admin_save_user(request):
         )
 
     messages.success(request, f"User profile updated.")
+    return redirect("admin_dashboard")
+
+
+@admin_staff_required
+@require_POST
+def admin_delete_user(request, user_id):
+    print("views working")
+    """Delete a user."""
+    if request.session.get("role", "").lower() not in ["admin", "staff"]:
+        return redirect("admin_dashboard")
+
+    admin_data.delete_user(user_id)
+    messages.success(request, "User deleted.")
     return redirect("admin_dashboard")
 
 

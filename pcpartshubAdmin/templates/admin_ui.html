@@ -1242,11 +1242,9 @@
           <div class="page-title">Product Management</div>
           <div class="page-subtitle">Manage your catalogue, pricing, and stock levels.</div>
         </div>
-        {% if user_role == 'admin' %}
         <button class="btn btn-primary" id="btn-add-product">
           <i class="fa fa-plus"></i> Add Product
         </button>
-        {% endif %}
       </div>
 
       <div class="card">
@@ -1285,7 +1283,7 @@
                     {% endif %}
                 </td>
                 <td>{{ p.category|default:"—" }}</td>
-                {% if user_role == 'admin' %}
+                {% if user_role == 'admin' or user_role == 'staff' %}
                 <td>
                   <div style="display:flex;gap:6px;">
                     <button class="btn btn-ghost btn-sm btn-edit-product" data-id="{{ p.item_id }}"
@@ -1342,7 +1340,7 @@
             <tbody>
               
               {% for u in users %}
-                {% if u.name != 'hello' %}
+                {% if u.name != "hello" and u.name != username %}
                   <tr>
                     <td>
                       <div style="display:flex;align-items:center;gap:10px;">
@@ -1368,6 +1366,11 @@
                         data-user-name="{{ u.name }}" data-user-email="{{ u.email }}" data-user-role="{{ u.role }}"
                         data-user-phone="{{ u.phone|default:'' }}">
                         <i class="fa fa-pencil"></i> Edit
+                      </button>
+                      <button class="btn btn-ghost btn-sm btn-delete-user" style="background-color: red; color: white;" data-id="{{ u.user_id }}"
+                        data-name="{{ u.name }}" data-email="{{ u.email }}" data-role="{{ u.role }}"
+                        data-phone="{{ u.phone|default:'' }}" data-action="{% url 'admin_delete_user' u.user_id %}" >
+                        <i class="fa fa-pencil"></i> Delete
                       </button>
                     </td>
                   </tr>
@@ -1687,6 +1690,28 @@
     </div>
   </div>
 
+
+  <!-- ─────────── DELETE CONFIRM MODAL ─────────── -->
+  <div class="modal-wrap" id="deleteUserModal">
+    <div class="modal-box" style="max-width:420px;">
+      <div class="modal-head">
+        <h5>Confirm Delete</h5>
+        <button type="button" class="modal-close" onclick="closeModal('deleteUserModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="confirm-msg">Are you sure you want to delete <strong id="delete-user-name"></strong>? This action
+          cannot be undone.</p>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('deleteUserModal')">Cancel</button>
+        <form id="delete-user-form" method="post">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger"><i class="fa fa-trash"></i> Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- ─────────── SETTINGS MODALS ─────────── -->
   {% if user_role == 'admin' %}
   {% for modal_id, modal_title, input_id in settings_modals|default:"" %}{% endfor %}
@@ -1934,6 +1959,15 @@
         document.getElementById('delete-item-name').textContent = this.dataset.name;
         document.getElementById('delete-form').action = this.dataset.action;
         openModal('deleteModal');
+      });
+    });
+
+    document.querySelectorAll('.btn-delete-user').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.getElementById('delete-user-name').textContent = this.dataset.name;
+        document.getElementById('delete-user-form').action = this.dataset.action;
+        console.log(this.dataset.action);
+        openModal('deleteUserModal');
       });
     });
 
