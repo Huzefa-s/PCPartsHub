@@ -1035,11 +1035,7 @@
       <i class="fa fa-th-large"></i> Dashboard
     </button>
 
-    <div class="nav-section-label" style="margin-top:12px;">Manage</div>
-    <button class="nav-link-item" data-tab="orders">
-      <i class="fa fa-shopping-bag"></i> Orders
-      <span class="nav-badge" id="sidebar-badge">{{ pending_count }}</span>
-    </button>
+    
     <button class="nav-link-item" data-tab="products">
       <i class="fa fa-tag"></i> Products
     </button>
@@ -1047,17 +1043,6 @@
       <i class="fa fa-users"></i> Users
     </button>
 
-    <div class="nav-section-label" style="margin-top:12px;">Analytics</div>
-    <button class="nav-link-item" data-tab="reports">
-      <i class="fa fa-bar-chart"></i> Reports
-    </button>
-
-    {% if user_role == 'admin' %}
-    <div class="nav-section-label" style="margin-top:12px;">Admin</div>
-    <button class="nav-link-item" data-tab="settings">
-      <i class="fa fa-cog"></i> Settings
-    </button>
-    {% endif %}
   </nav>
 
   <!-- ─────────── MAIN ─────────── -->
@@ -1158,83 +1143,7 @@
       </div>
     </div>
 
-    <!-- ══ ORDERS ══ -->
-    <div class="tab-panel" id="tab-orders">
-      <div class="page-header">
-        <div>
-          <div class="page-title">Order Management</div>
-          <div class="page-subtitle">Track and update all customer orders.</div>
-        </div>
-        <div class="search-wrap">
-          <i class="fa fa-search"></i>
-          <input class="form-control" id="order-search" placeholder="Search orders…">
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-body">
-          <table class="admin-table" id="orders-table">
-            <thead>
-              <tr>
-                <th>Order #</th>
-                <th>Customer</th>
-                <th>Date</th>
-                <th>Total</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for order in orders %}
-              <tr>
-                <td><strong>#{{ order.order_id }}</strong></td>
-                <td>
-                  {{ order.customer_name }}
-                  <div class="cell-muted">{{ order.customer_email }}</div>
-                </td>
-                <td>{{ order.order_date }}</td>
-                <td>Rs.{{ order.totalPrice }}/-</td>
-                <td>
-                  <span class="status-pill status-{{ order.order_status|lower }}">{{ order.order_status }}</span>
-                </td>
-                <td>
-                  <div style="display:flex;gap:8px;align-items:center;">
-                    <form method="post" action="{% url 'admin_update_order_status' %}" class="status-select-wrap">
-                      {% csrf_token %}
-                      <input type="hidden" name="order_id" value="{{ order.order_id }}">
-                      <select name="status">
-                        <option value="Processing" {% if order.order_status == 'Processing' %}selected{% endif %}>
-                          Processing</option>
-                        <option value="Shipped" {% if order.order_status == 'Shipped' %}selected{% endif %}>Shipped
-                        </option>
-                        <option value="Delivered" {% if order.order_status == 'Delivered' %}selected{% endif %}>Delivered
-                        </option>
-                        <option value="Cancelled" {% if order.order_status == 'Cancelled' %}selected{% endif %}>Cancelled
-                        </option>
-                      </select>
-                      <button type="submit" class="btn btn-primary btn-sm">Save</button>
-                    </form>
-                    {% if user_role == 'admin' %}
-                    <a class="btn btn-ghost btn-sm" href="{% url 'admin_order_invoice' order.order_id %}"
-                      target="_blank">
-                      <i class="fa fa-file-text-o"></i> Invoice
-                    </a>
-                    {% endif %}
-                  </div>
-                </td>
-              </tr>
-              {% empty %}
-              <tr class="empty-row">
-                <td colspan="6"><i class="fa fa-inbox fa-2x" style="display:block;margin:0 auto 8px;opacity:.3;"></i>No
-                  orders found.</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
+    
     <!-- ══ PRODUCTS ══ -->
     <div class="tab-panel" id="tab-products">
       <div class="page-header">
@@ -1367,11 +1276,13 @@
                         data-user-phone="{{ u.phone|default:'' }}">
                         <i class="fa fa-pencil"></i> Edit
                       </button>
-                      <button class="btn btn-ghost btn-sm btn-delete-user" style="background-color: red; color: white;" data-id="{{ u.user_id }}"
-                        data-name="{{ u.name }}" data-email="{{ u.email }}" data-role="{{ u.role }}"
-                        data-phone="{{ u.phone|default:'' }}" data-action="{% url 'admin_delete_user' u.user_id %}" >
-                        <i class="fa fa-pencil"></i> Delete
-                      </button>
+                      {% if user_role == 'admin' %}
+                        <button class="btn btn-ghost btn-sm btn-delete-user" style="background-color: red; color: white;" data-id="{{ u.user_id }}"
+                          data-name="{{ u.name }}" data-email="{{ u.email }}" data-role="{{ u.role }}"
+                          data-phone="{{ u.phone|default:'' }}" data-action="{% url 'admin_delete_user' u.user_id %}" >
+                          <i class="fa fa-pencil"></i> Delete
+                        </button>
+                      {% endif %}
                     </td>
                   </tr>
                 {% endif %}
@@ -1388,71 +1299,7 @@
       </div>
     </div>
 
-    <!-- ══ REPORTS ══ -->
-    <div class="tab-panel" id="tab-reports">
-      <div class="page-header">
-        <div class="page-title">Reports</div>
-        <div class="page-subtitle">Sales performance and inventory analytics.</div>
-      </div>
-      <div class="card">
-        <div class="report-placeholder">
-          <i class="fa fa-bar-chart" style="display:block;"></i>
-          <div style="font-size:15px;color:var(--ink-soft);margin-bottom:6px;">Sales Summary</div>
-          <div>Top-selling products and daily revenue breakdown will appear here.</div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="report-placeholder">
-          <i class="fa fa-cubes" style="display:block;"></i>
-          <div style="font-size:15px;color:var(--ink-soft);margin-bottom:6px;">Inventory Value</div>
-          <div>Total stock value and low-stock alerts will appear here.</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ══ SETTINGS ══ -->
-    {% if user_role == 'admin' %}
-    <div class="tab-panel" id="tab-settings">
-      <div class="page-header">
-        <div class="page-title">Settings</div>
-        <div class="page-subtitle">Admin-only store configuration.</div>
-      </div>
-
-      <div class="settings-section">
-        <div class="settings-section-title"><i class="fa fa-credit-card"></i> Payment Gateways</div>
-        <div class="settings-value" id="paymentDesc">Cash on Delivery, Card</div>
-        <button class="btn btn-ghost btn-sm" onclick="openSettingsModal('paymentModal', 'paymentDesc', 'paymentInput')">
-          <i class="fa fa-pencil"></i> Edit
-        </button>
-      </div>
-
-      <div class="settings-section">
-        <div class="settings-section-title"><i class="fa fa-truck"></i> Shipping Options</div>
-        <div class="settings-value" id="shippingDesc">Standard: Rs.150, Express: Rs.350 within Karachi.</div>
-        <button class="btn btn-ghost btn-sm"
-          onclick="openSettingsModal('shippingModal', 'shippingDesc', 'shippingInput')">
-          <i class="fa fa-pencil"></i> Edit
-        </button>
-      </div>
-
-      <div class="settings-section">
-        <div class="settings-section-title"><i class="fa fa-percent"></i> Tax Settings</div>
-        <div class="settings-value" id="taxDesc">17% GST applied to all orders.</div>
-        <button class="btn btn-ghost btn-sm" onclick="openSettingsModal('taxModal', 'taxDesc', 'taxInput')">
-          <i class="fa fa-pencil"></i> Edit
-        </button>
-      </div>
-
-      <div class="settings-section">
-        <div class="settings-section-title"><i class="fa fa-file-text-o"></i> Store Policies</div>
-        <div class="settings-value" id="policyDesc">Returns accepted within 7 days. No refunds on custom orders.</div>
-        <button class="btn btn-ghost btn-sm" onclick="openSettingsModal('policyModal', 'policyDesc', 'policyInput')">
-          <i class="fa fa-pencil"></i> Edit
-        </button>
-      </div>
-    </div>
-    {% endif %}
-
+    
   </main>
 
   <!-- ─────────── TOAST CONTAINER ─────────── -->
