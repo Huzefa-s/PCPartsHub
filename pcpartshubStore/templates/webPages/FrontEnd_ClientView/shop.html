@@ -1,0 +1,130 @@
+{% extends "webPages/FrontEnd_ClientView/siteContainer.html" %}
+{% load static %}
+
+{% block element %}
+
+<!-- Page Banner Section Start-->
+<div class="page-banner-section section" style="background-image: url('{% static 'webPages/FrontEnd_ClientView/img/bg/page-banner.jpg' %}')">
+    <div class="container">
+        <div class="row">
+            
+            <!-- Page Title Start -->
+            <div class="page-title text-center col">
+                <h1>shop page</h1>
+            </div><!-- Page Title End -->
+            
+        </div>
+    </div>
+</div><!-- Page Banner Section End-->
+
+   
+<!-- Product Section Start-->
+<div class="product-section section pt-120 pb-120">
+    <div class="container">
+        
+        <!-- Product Wrapper Start-->
+        <div class="row">
+
+            {% for product in products %}
+
+            <div class="col-lg-4 col-md-6 col-12 mb-60">
+                            
+                <div class="product">
+
+                    <!-- Image Wrapper -->
+                    <div class="image">
+                        <!-- Image -->
+                        <a href="{% url 'product_detail' product.item_id %}" class="img">
+                            {% if product.image_base64 %}
+                                <img src="data:image/jpeg;base64,{{ product.image_base64 }}" alt="{{ product.itemName }}">
+                            {% else %}
+                                <img src="{% static 'webPages/FrontEnd_ClientView/img/product/default.jpg' %}">
+                            {% endif %}
+                        </a>
+                        <!-- Wishlist -->
+                        <a href="#" class="wishlist"><i class="fa fa-heart-o"></i></a>
+                        <!-- Label -->
+                        <span class="label">New</span>
+                    </div>
+                    
+                    <!-- Content -->
+                    <div class="content">
+                        
+                        <!-- Head Content -->
+                        <div class="head fix">
+                        
+                            <!-- Title & Category -->
+                            <div class="title-category float-left">
+                                <h5 class="title"><a href="{% url 'product_detail' product.item_id %}">{{product.itemName}}</a></h5>
+                                <a href="../shop" class="category">Catalog</a>
+                            </div>
+                            <!-- Price -->
+                            <div class="price float-right">
+                                <span class="new">${{product.basePrice}}</span>
+                                <!-- Old Price Mockup If Need -->
+                                <!-- <span class="old">$46</span> -->
+                            </div>
+                            
+                        </div>
+                        
+                        <!-- Action Button -->
+                        <div class="action-button fix">
+                            <a href="{% url 'add_to_cart' product.item_id %}?qty=1&next={{ request.path }}">add to cart</a>
+                        </div>
+                        
+                    </div>
+
+                </div>
+                
+            </div>
+
+            {% endfor %}
+
+            
+            
+            
+            <!-- Pagination Start -->
+            <div class="pagination col-12 mt-20">
+                <ul>
+                    {% for page in pages %}
+                        {% if page == current_page %}
+                            <li class="active"><a href="#">{{ page }}</a></li>
+                        {% else %}
+                            <li>
+                                {% if category and subcategory %}
+                                    <a href="{% url 'shop' page category subcategory %}">{{ page }}</a>
+                                {% elif category %}
+                                    <a href="{% url 'shop' page category %}">{{ page }}</a>
+                                {% else %}
+                                    <a href="{% url 'shop' page %}">{{ page }}</a>
+                                {% endif %}
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    <li class="arrows">
+                        {% if current_page < pages|length %}
+                            {% with next_page=current_page|add:1 %}
+                                {% if category and subcategory %}
+                                    <a href="{% url 'shop' next_page category subcategory %}"><i class="fa fa-angle-right"></i></a>
+                                {% elif category %}
+                                    <a href="{% url 'shop' next_page category %}"><i class="fa fa-angle-right"></i></a>
+                                {% else %}
+                                    <a href="{% url 'shop' next_page %}"><i class="fa fa-angle-right"></i></a>
+                                {% endif %}
+                            {% endwith %}
+                        {% else %}
+                            <a href="#"><i class="fa fa-angle-right"></i></a>
+                        {% endif %}
+                    </li>
+                </ul>
+            </div>
+            <!-- Pagination End -->
+
+            
+        </div><!-- Product Wrapper End-->
+        
+    </div>
+</div><!-- Product Section End-->
+
+
+{% endblock %}

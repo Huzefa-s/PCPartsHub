@@ -4,8 +4,9 @@ from django.contrib import messages
 import base64
 import math
 import re
+from datetime import datetime;
 
-from .database.data import (
+from database.data import (
     custom_sql_select,
     fetch_items,
     get_item_by_id,
@@ -20,6 +21,7 @@ from .database.data import (
     delete_user_address,
     get_user_orders,
     get_user_by_email,   # ensure this exists in data.py – returns user dict or None
+    create_order,
 )
 
 
@@ -239,6 +241,9 @@ def register_submit(request):
         phone_digits = re.sub(r"[\s\-\+\(\)]", "", phone)
         if not re.match(r"^\d{7,15}$", phone_digits):
             errors.append("Phone number must contain 7–15 digits.")
+    
+    if not phone:
+        errors.append("Phone number is required.")
 
     # Unique email / username check
     if email and not errors:
@@ -407,6 +412,42 @@ def logout_view(request):
 
 
 # ---------------------------------------------------------------------------
+# Shop
+# ---------------------------------------------------------------------------
+
+def shop(request, current_page = 1, category = '', subcategory = ''):
+    user_ctx = _session_user_context(request)
+    limit_on_single_page = 12
+
+    result = fetch_items(category or None, subcategory or None)
+
+    for item in result:
+        if item.get("image"):
+            item["image_base64"] = base64.b64encode(item["image"]).decode("utf-8")
+        else:
+            item["image_base64"] = None
+
+    total_pages = max(1, math.ceil(len(result) / limit_on_single_page))
+    pages = [i + 1 for i in range(total_pages)]
+
+    current_page = max(1, min(current_page, total_pages))
+    start = (current_page - 1) * limit_on_single_page
+    end = current_page * limit_on_single_page
+    result_selected = result[start:end]
+
+    return render(
+        request,
+        "webPages/FrontEnd_ClientView/shop.html",
+        {
+            "products": result_selected,
+            "pages": pages,
+            "user": user_ctx,
+            "current_page": current_page,
+        },
+    )
+
+
+# ---------------------------------------------------------------------------
 # Utility
 # ---------------------------------------------------------------------------
 
@@ -417,3 +458,209 @@ def under_construction(request):
         "webPages/FrontEnd_ClientView/under-construction.html",
         {"user": user_ctx},
     )
+
+
+# ---------------------------------------------------------------------------
+# Product and Cart
+# ---------------------------------------------------------------------------
+
+def product_detail(request, product_id):
+    user_ctx = _session_user_context(request)
+
+    product = get_item_by_id(product_id)
+
+    if not product:
+        return HttpResponse("Product not found.")
+
+    if product.get("image"):
+        product["image_base64"] = base64.b64encode(product["image"]).decode("utf-8")
+    else:
+        product["image_base64"] = None
+
+    return render(
+        request,
+        "webPages/FrontEnd_ClientView/product-details.html",
+        {
+            "product": product,
+            "user": user_ctx,
+        },
+    )
+
+
+def _get_cart(request):
+    """
+    Internal helper to read the cart from the session.
+    Cart is stored as {item_id: quantity}.
+    """
+    raw_cart = request.session.get("cart", {})
+    # normalise keys to int
+    cart = {}
+    for k, v in raw_cart.items():
+        try:
+            item_id = int(k)
+            qty = int(v)
+        except (TypeError, ValueError):
+            continue
+        if qty > 0:
+            cart[item_id] = qty
+    return cart
+
+
+def _save_cart(request, cart):
+    # store with string keys to keep session serialisable
+    request.session["cart"] = {str(k): int(v) for k, v in cart.items() if int(v) > 0}
+    request.session.modified = True
+
+
+def add_to_cart(request, product_id):
+    """
+    Add a product to the cart (or increase its quantity).
+    Quantity can optionally be provided via POST or ?qty=.
+    """
+    cart = _get_cart(request)
+
+    qty = 1
+    if request.method == "POST":
+        qty_str = request.POST.get("quantity") or request.POST.get("qty")
+    else:
+        qty_str = request.GET.get("qty")
+
+    if qty_str:
+        try:
+            qty = max(1, int(qty_str))
+        except ValueError:
+            qty = 1
+
+    cart[product_id] = cart.get(product_id, 0) + qty
+    _save_cart(request, cart)
+
+    # redirect back if a "next" parameter is provided
+    next_url = request.POST.get("next") or request.GET.get("next")
+    if next_url:
+        return redirect(next_url)
+    return redirect("cart")
+
+
+def cart_view(request):
+    """
+    Display and manage the shopping cart.
+    """
+    user_ctx = _session_user_context(request)
+
+    cart = _get_cart(request)
+
+    if request.method == "POST":
+        # remove single item
+        if "remove" in request.POST:
+            try:
+                item_id = int(request.POST.get("remove"))
+                if item_id in cart:
+                    cart.pop(item_id)
+                    _save_cart(request, cart)
+            except (TypeError, ValueError):
+                pass
+            return redirect("cart")
+
+        # update all quantities
+        if "update_cart" in request.POST:
+            new_cart = {}
+            for key, value in request.POST.items():
+                if not key.startswith("qty_"):
+                    continue
+                try:
+                    item_id = int(key.split("_", 1)[1])
+                    qty = int(value)
+                except (ValueError, IndexError):
+                    continue
+                if qty > 0:
+                    new_cart[item_id] = qty
+            cart = new_cart
+            _save_cart(request, cart)
+            return redirect("cart")
+
+    item_ids = list(cart.keys())
+    items = get_items_by_ids(item_ids)
+    items_by_id = {item["item_id"]: item for item in items}
+
+    cart_items = []
+    subtotal = 0
+
+    for item_id, qty in cart.items():
+        item = items_by_id.get(item_id)
+        if not item:
+            continue
+
+        if item.get("image"):
+            item["image_base64"] = base64.b64encode(item["image"]).decode("utf-8")
+        else:
+            item["image_base64"] = None
+
+        price = item.get("basePrice") or 0
+        line_total = price * qty
+        subtotal += line_total
+
+        cart_items.append(
+            {
+                "item": item,
+                "quantity": qty,
+                "line_total": line_total,
+            }
+        )
+
+    context = {
+        "user": user_ctx,
+        "cart_items": cart_items,
+        "subtotal": subtotal,
+        "grand_total": subtotal,  # no shipping/tax logic yet
+    }
+
+    return render(request, "webPages/FrontEnd_ClientView/cart.html", context)
+
+
+def checkout(request):
+    """
+    Simple checkout page based on the current cart.
+    Does not persist orders but clears the cart on "place order".
+    """
+    user_ctx = _session_user_context(request)
+
+    cart = _get_cart(request)
+    item_ids = list(cart.keys())
+    items = get_items_by_ids(item_ids)
+    items_by_id = {item["item_id"]: item for item in items}
+
+    order_lines = []
+    subtotal = 0
+
+    for item_id, qty in cart.items():
+        item = items_by_id.get(item_id)
+        if not item:
+            continue
+        price = item.get("basePrice") or 0
+        line_total = price * qty
+        subtotal += line_total
+        order_lines.append(
+            {
+                "item_id": item_id,
+                "item": item,
+                "quantity": qty,
+                "line_total": line_total,
+            }
+        )
+
+    grand_total = subtotal
+
+    if request.method == "POST" and "place_order" in request.POST:
+        # In a real project you would insert into an Orders table here.
+        create_order(user_ctx["userID"], datetime.now(), "Processing", grand_total, order_lines)
+        _save_cart(request, {})
+        messages.success(request, "Your order has been placed successfully.")
+        return redirect("index")
+
+    context = {
+        "user": user_ctx,
+        "order_lines": order_lines,
+        "subtotal": subtotal,
+        "grand_total": grand_total,
+    }
+    return render(request, "webPages/FrontEnd_ClientView/checkout.html", context)

@@ -1,0 +1,677 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Staff Login — Jewels &amp; Trinkets</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink:       #1a1a2e;
+      --ink-soft:  #4a4a6a;
+      --ink-muted: #8888aa;
+      --bg:        #f4f3f0;
+      --bg-card:   #ffffff;
+      --border:    #e2e0db;
+      --accent:    #b5541e;
+      --accent-lt: #f5ede8;
+      --accent-dk: #8c3d12;
+      --green:     #2a7a4f;
+      --green-lt:  #e8f5ee;
+      --red:       #c0392b;
+      --red-lt:    #fdecea;
+      --shadow:    0 2px 12px rgba(26,26,46,.07);
+      --shadow-lg: 0 8px 40px rgba(26,26,46,.14);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Split Layout ── */
+    .page {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 100vh;
+    }
+
+    /* ── Left panel: branding ── */
+    .brand-panel {
+      background: var(--ink);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 64px;
+      position: relative;
+      overflow: hidden;
+    }
+    .brand-panel::before {
+      content: '';
+      position: absolute;
+      top: -120px; right: -120px;
+      width: 400px; height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(181,84,30,.25) 0%, transparent 70%);
+    }
+    .brand-panel::after {
+      content: '';
+      position: absolute;
+      bottom: -80px; left: -80px;
+      width: 300px; height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(181,84,30,.15) 0%, transparent 70%);
+    }
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 56px;
+      position: relative; z-index: 1;
+    }
+    .brand-logo img {
+      height: 40px;
+      border-radius: 6px;
+    }
+    .brand-logo-name {
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px;
+      color: #fff;
+      line-height: 1.1;
+    }
+    .brand-logo-sub {
+      font-size: 11px;
+      color: rgba(255,255,255,.45);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+    }
+    .brand-headline {
+      font-family: 'DM Serif Display', serif;
+      font-size: 42px;
+      color: #fff;
+      line-height: 1.15;
+      margin-bottom: 20px;
+      position: relative; z-index: 1;
+    }
+    .brand-headline em {
+      font-style: italic;
+      color: #ffbea0;
+    }
+    .brand-desc {
+      font-size: 14px;
+      color: rgba(255,255,255,.5);
+      line-height: 1.7;
+      max-width: 340px;
+      position: relative; z-index: 1;
+    }
+    .brand-dots {
+      display: flex;
+      gap: 6px;
+      margin-top: 48px;
+      position: relative; z-index: 1;
+    }
+    .brand-dots span {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.2);
+    }
+    .brand-dots span:first-child { background: var(--accent); width: 20px; border-radius: 3px; }
+
+    /* ── Right panel: form ── */
+    .form-panel {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 48px 40px;
+      background: var(--bg-card);
+    }
+    .form-inner {
+      width: 100%;
+      max-width: 380px;
+    }
+    .form-eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+    .form-heading {
+      font-family: 'DM Serif Display', serif;
+      font-size: 30px;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+    .form-sub {
+      font-size: 13.5px;
+      color: var(--ink-muted);
+      margin-bottom: 36px;
+    }
+
+    /* ── Alert ── */
+    .alert {
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .alert-error {
+      background: var(--red-lt);
+      border: 1px solid #f5c6c2;
+      color: var(--red);
+    }
+    .alert-success {
+      background: var(--green-lt);
+      border: 1px solid #b8dcc8;
+      color: var(--green);
+    }
+
+    /* ── Form elements ── */
+    .form-group { margin-bottom: 18px; }
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink-soft);
+      margin-bottom: 6px;
+      letter-spacing: .03em;
+    }
+    .input-wrap { position: relative; }
+    .input-wrap i {
+      position: absolute;
+      left: 13px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--ink-muted);
+      font-size: 14px;
+      pointer-events: none;
+    }
+    .input-wrap .toggle-pw {
+      position: absolute;
+      right: 13px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--ink-muted);
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-size: 14px;
+      padding: 0;
+      line-height: 1;
+    }
+    .input-wrap .toggle-pw:hover { color: var(--ink); }
+    .form-control {
+      width: 100%;
+      padding: 10px 12px 10px 38px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      outline: none;
+      transition: border-color .15s, box-shadow .15s, background .15s;
+    }
+    .form-control:focus {
+      border-color: var(--accent);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(181,84,30,.1);
+    }
+    .form-control.no-icon { padding-left: 12px; }
+    .form-control.has-toggle { padding-right: 38px; }
+
+    /* ── Remember + Forgot row ── */
+    .form-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .checkbox-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .checkbox-wrap input[type=checkbox] {
+      width: 16px; height: 16px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+    .checkbox-wrap span {
+      font-size: 13px;
+      color: var(--ink-soft);
+      user-select: none;
+    }
+    .forgot-link {
+      font-size: 13px;
+      color: var(--accent);
+      font-weight: 500;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+      font-family: 'DM Sans', sans-serif;
+      text-decoration: none;
+    }
+    .forgot-link:hover { color: var(--accent-dk); text-decoration: underline; }
+
+    /* ── Submit button ── */
+    .btn-submit {
+      width: 100%;
+      padding: 12px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: background .15s, transform .1s;
+      letter-spacing: .02em;
+    }
+    .btn-submit:hover  { background: var(--accent-dk); }
+    .btn-submit:active { transform: scale(.99); }
+    .btn-submit:disabled {
+      background: var(--ink-muted);
+      cursor: not-allowed;
+    }
+
+    /* ── Back to store ── */
+    .back-link {
+      text-align: center;
+      margin-top: 28px;
+      font-size: 13px;
+      color: var(--ink-muted);
+    }
+    .back-link a {
+      color: var(--accent);
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .back-link a:hover { text-decoration: underline; }
+
+    /* ── Forgot Password overlay ── */
+    .fp-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(26,26,46,.5);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .fp-overlay.show { display: flex; }
+    .fp-box {
+      background: var(--bg-card);
+      border-radius: 14px;
+      box-shadow: var(--shadow-lg);
+      width: 100%;
+      max-width: 420px;
+      animation: slideUp .2s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(16px); opacity: 0; }
+      to   { transform: none; opacity: 1; }
+    }
+    .fp-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    .fp-head h3 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 20px;
+      margin: 0;
+    }
+    .fp-close {
+      width: 30px; height: 30px;
+      border-radius: 6px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; color: var(--ink-soft);
+      transition: all .15s;
+    }
+    .fp-close:hover { background: var(--red-lt); color: var(--red); border-color: var(--red); }
+    .fp-body { padding: 24px; }
+    .fp-body p {
+      font-size: 13.5px;
+      color: var(--ink-soft);
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+    .fp-foot {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    .btn-ghost {
+      padding: 9px 18px;
+      background: transparent;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      color: var(--ink-soft);
+      font-size: 13px;
+      font-weight: 500;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .btn-ghost:hover { border-color: var(--ink-soft); color: var(--ink); }
+    .btn-primary {
+      padding: 9px 18px;
+      background: var(--accent);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-primary:hover    { background: var(--accent-dk); }
+    .btn-primary:disabled { background: var(--ink-muted); cursor: not-allowed; }
+
+    /* Font Awesome shim (reuse project's FA) */
+    .fa { font-style: normal; }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .page { grid-template-columns: 1fr; }
+      .brand-panel { display: none; }
+      .form-panel { padding: 40px 24px; }
+    }
+  </style>
+  <!-- Reuse project Font Awesome -->
+  <link rel="stylesheet" href="{% static 'css/font-awesome.min.css' %}">
+</head>
+<body>
+
+<div class="page">
+  <!-- ── Left: Branding ── -->
+  <div class="brand-panel">
+    <div class="brand-logo">
+      <img src="{% static 'assets/img/logo.png' %}" alt="Logo">
+      <div>
+        <div class="brand-logo-name">Jewels &amp; Trinkets</div>
+        <div class="brand-logo-sub">Admin Portal</div>
+      </div>
+    </div>
+    <div class="brand-headline">
+      Manage your<br>store with <em>ease.</em>
+    </div>
+    <p class="brand-desc">
+      Secure access for administrators and staff. Oversee orders, products,
+      inventory, and customer accounts from one unified dashboard.
+    </p>
+    <div class="brand-dots">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+
+  <!-- ── Right: Login Form ── -->
+  <div class="form-panel">
+    <div class="form-inner">
+      <div class="form-eyebrow">Staff &amp; Admin Portal</div>
+      <h1 class="form-heading">Welcome back</h1>
+      <p class="form-sub">Sign in to access your dashboard.</p>
+
+      <!-- Django messages -->
+      {% if messages %}
+        {% for message in messages %}
+        <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+          <i class="fa fa-{% if message.tags == 'error' %}times-circle{% else %}check-circle{% endif %}"></i>
+          {{ message }}
+        </div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="post" action="" id="login-form">
+        {% csrf_token %}
+
+        <div class="form-group">
+          <label class="form-label" for="identifier">Username or Employee ID</label>
+          <div class="input-wrap">
+            <i class="fa fa-user"></i>
+            <input
+              type="text"
+              id="identifier"
+              name="identifier"
+              class="form-control"
+              placeholder="Enter username or employee ID"
+              autocomplete="username"
+              required
+              value="{{ identifier_value|default:'' }}"
+            >
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <div class="input-wrap">
+            <i class="fa fa-lock"></i>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-control has-toggle"
+              placeholder="Enter your password"
+              autocomplete="current-password"
+              required
+            >
+            <button type="button" class="toggle-pw" onclick="togglePassword()" title="Show/hide password">
+              <i class="fa fa-eye" id="pw-eye-icon"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-meta">
+          <label class="checkbox-wrap">
+            <input type="checkbox" name="remember_me" id="remember-me"
+              {% if remember_checked %}checked{% endif %}>
+            <span>Remember me</span>
+          </label>
+          <button type="button" class="forgot-link" onclick="openForgotPassword()">
+            Forgot password?
+          </button>
+        </div>
+
+        <button type="submit" class="btn-submit" id="login-btn">
+          Sign In
+        </button>
+      </form>
+
+      <div class="back-link">
+        <a href="/">&larr; Back to store</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Forgot Password Modal ── -->
+<div class="fp-overlay" id="fp-overlay">
+  <div class="fp-box">
+    <div class="fp-head">
+      <h3>Reset Password</h3>
+      <button class="fp-close" onclick="closeForgotPassword()">&times;</button>
+    </div>
+
+    <!-- Step 1: enter email -->
+    <div id="fp-step-1">
+      <div class="fp-body">
+        <p>
+          Enter the email address linked to your account. We'll send you
+          a password reset link.
+        </p>
+        <form id="fp-form">
+          <!-- web3forms hidden fields -->
+          <input type="hidden" name="access_key" value="b47ae5a9-9ce7-469a-93c7-464daa0b0ece">
+          <input type="hidden" name="subject" value="Admin Password Reset Request — Jewels & Trinkets">
+          <input type="hidden" name="from_name" value="Jewels & Trinkets Admin Portal">
+          <!-- honeypot -->
+          <input type="checkbox" name="botcheck" style="display:none;">
+
+          <div class="form-group">
+            <label class="form-label" for="fp-email">Work Email Address</label>
+            <div class="input-wrap">
+              <i class="fa fa-envelope"></i>
+              <input
+                type="email"
+                id="fp-email"
+                name="email"
+                class="form-control"
+                placeholder="you@example.com"
+                required
+              >
+            </div>
+          </div>
+
+          <!-- Invisible custom message field for context -->
+          <textarea name="message" style="display:none;">A password reset was requested for this staff/admin account from the Jewels & Trinkets admin portal. Please reset the password for this user.</textarea>
+        </form>
+
+        <!-- Success/error messages shown after submission -->
+        <div id="fp-msg" style="display:none;" class="alert"></div>
+      </div>
+      <div class="fp-foot">
+        <button class="btn-ghost" onclick="closeForgotPassword()">Cancel</button>
+        <button class="btn-primary" id="fp-submit-btn" onclick="submitForgotPassword()">
+          <i class="fa fa-paper-plane"></i> Send Reset Link
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 2: confirmation -->
+    <div id="fp-step-2" style="display:none;">
+      <div class="fp-body" style="text-align:center;padding:36px 24px;">
+        <div style="width:56px;height:56px;border-radius:50%;background:var(--green-lt);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:22px;color:var(--green);">
+          <i class="fa fa-check"></i>
+        </div>
+        <div style="font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:8px;">Check your inbox</div>
+        <p style="color:var(--ink-soft);font-size:13.5px;line-height:1.6;margin:0;">
+          We've sent a reset link to <strong id="fp-sent-email"></strong>.
+          If you don't see it, check your spam folder.
+        </p>
+      </div>
+      <div class="fp-foot">
+        <button class="btn-primary" onclick="closeForgotPassword()">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ── Password visibility toggle ── */
+  function togglePassword() {
+    var inp  = document.getElementById('password');
+    var icon = document.getElementById('pw-eye-icon');
+    var isHidden = inp.type === 'password';
+    inp.type  = isHidden ? 'text' : 'password';
+    icon.className = isHidden ? 'fa fa-eye-slash' : 'fa fa-eye';
+  }
+
+  /* ── Login form: disable button on submit ── */
+  document.getElementById('login-form').addEventListener('submit', function() {
+    var btn = document.getElementById('login-btn');
+    btn.textContent = 'Signing in…';
+    btn.disabled = true;
+  });
+
+  /* ── Forgot Password ── */
+  function openForgotPassword() {
+    document.getElementById('fp-overlay').classList.add('show');
+    document.getElementById('fp-step-1').style.display = 'block';
+    document.getElementById('fp-step-2').style.display = 'none';
+    document.getElementById('fp-msg').style.display = 'none';
+    document.getElementById('fp-email').value = '';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeForgotPassword() {
+    document.getElementById('fp-overlay').classList.remove('show');
+    document.body.style.overflow = '';
+  }
+
+  /* Close on backdrop click */
+  document.getElementById('fp-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeForgotPassword();
+  });
+
+  /* ── web3forms submission ── */
+  async function submitForgotPassword() {
+    var form      = document.getElementById('fp-form');
+    var submitBtn = document.getElementById('fp-submit-btn');
+    var msgEl     = document.getElementById('fp-msg');
+    var emailVal  = document.getElementById('fp-email').value.trim();
+
+    if (!emailVal) {
+      document.getElementById('fp-email').focus();
+      return;
+    }
+
+    var formData = new FormData(form);
+    var originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Sending…';
+    submitBtn.disabled = true;
+    msgEl.style.display = 'none';
+
+    try {
+      var response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        body: formData
+      });
+      var data = await response.json();
+
+      if (response.ok) {
+        /* Show success step */
+        document.getElementById('fp-sent-email').textContent = emailVal;
+        document.getElementById('fp-step-1').style.display = 'none';
+        document.getElementById('fp-step-2').style.display = 'block';
+      } else {
+        msgEl.className = 'alert alert-error';
+        msgEl.innerHTML = '<i class="fa fa-times-circle"></i> ' + (data.message || 'Something went wrong. Please try again.');
+        msgEl.style.display = 'flex';
+      }
+    } catch (error) {
+      msgEl.className = 'alert alert-error';
+      msgEl.innerHTML = '<i class="fa fa-times-circle"></i> Network error. Please check your connection and try again.';
+      msgEl.style.display = 'flex';
+    } finally {
+      submitBtn.innerHTML = originalText;
+      submitBtn.disabled = false;
+    }
+  }
+
+  /* Allow Enter key inside the forgot-password email field */
+  document.getElementById('fp-email').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); submitForgotPassword(); }
+  });
+</script>
+</body>
+</html>

@@ -1311,16 +1311,9 @@
           <div class="page-title">User Management</div>
           <div class="page-subtitle">View and manage customer and staff accounts.</div>
         </div>
-        <div style="display:flex;gap:12px;align-items:center;">
-          <div class="search-wrap">
-            <i class="fa fa-search"></i>
-            <input class="form-control" id="user-search" placeholder="Search users…">
-          </div>
-          {% if user_role == 'admin' %}
-          <button class="btn btn-primary" id="btn-add-user">
-            <i class="fa fa-user-plus"></i> Add User
-          </button>
-          {% endif %}
+        <div class="search-wrap">
+          <i class="fa fa-search"></i>
+          <input class="form-control" id="user-search" placeholder="Search users…">
         </div>
       </div>
 
@@ -1367,10 +1360,10 @@
                         <i class="fa fa-pencil"></i> Edit
                       </button>
                       {% if user_role == 'admin' %}
-                        <button class="btn btn-danger btn-sm btn-delete-user" data-id="{{ u.user_id }}"
+                        <button class="btn btn-ghost btn-sm btn-delete-user" style="background-color: red; color: white;" data-id="{{ u.user_id }}"
                           data-name="{{ u.name }}" data-email="{{ u.email }}" data-role="{{ u.role }}"
                           data-phone="{{ u.phone|default:'' }}" data-action="{% url 'admin_delete_user' u.user_id %}" >
-                          <i class="fa fa-trash"></i> Delete
+                          <i class="fa fa-pencil"></i> Delete
                         </button>
                       {% endif %}
                     </td>
@@ -1481,93 +1474,6 @@
           <button type="button" class="btn btn-ghost" onclick="closeModal('productModal')">Cancel</button>
           <button type="submit" class="btn btn-primary" id="prod-submit-btn">
             <i class="fa fa-check"></i> Save Product
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ─────────── ADD USER MODAL ─────────── -->
-  <div class="modal-wrap" id="addUserModal">
-    <div class="modal-box">
-      <form id="add-user-form" method="post" action="{% url 'admin_add_user' %}">
-        {% csrf_token %}
-        <div class="modal-head">
-          <h5>Add New User</h5>
-          <button type="button" class="modal-close" onclick="closeModal('addUserModal')">&times;</button>
-        </div>
-        <div class="modal-body">
-
-          <div class="form-row">
-            <div class="form-group" style="flex:2">
-              <label class="form-label">Full Name *</label>
-              <input name="name" class="form-control" required placeholder="e.g. Ayesha Khan">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Role *</label>
-              <select name="role" class="form-control" id="new-user-role" onchange="toggleNewUserFields()">
-                <option value="customer">Customer</option>
-                <option value="staff">Staff</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Email *</label>
-              <input name="email" type="email" class="form-control" required placeholder="user@example.com">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Phone</label>
-              <input name="phone" class="form-control" placeholder="+92 300 0000000">
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Password *</label>
-              <input name="password" type="password" class="form-control" required placeholder="Minimum 8 characters"
-                minlength="8" id="new-user-pw">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Confirm Password *</label>
-              <input name="password_confirm" type="password" class="form-control" required placeholder="Re-enter password"
-                id="new-user-pw-confirm">
-            </div>
-          </div>
-
-          <!-- Staff-only fields (hidden for customer) -->
-          <div id="new-user-staff-fields" style="display:none;">
-            <div style="height:1px;background:var(--border);margin:4px 0 18px;"></div>
-            <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:14px;">Staff Details</div>
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Employee ID</label>
-                <input name="employee_id" class="form-control" placeholder="e.g. EMP-001">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Job Title</label>
-                <input name="job_title" class="form-control" placeholder="e.g. Store Manager">
-              </div>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Notes</label>
-            <textarea name="notes" class="form-control" rows="2" placeholder="Optional internal notes…"></textarea>
-          </div>
-
-          <!-- Inline password mismatch error -->
-          <div id="pw-mismatch-err" style="display:none;font-size:12.5px;color:var(--red);margin-top:-8px;margin-bottom:12px;">
-            <i class="fa fa-exclamation-circle"></i> Passwords do not match.
-          </div>
-
-        </div>
-        <div class="modal-foot">
-          <button type="button" class="btn btn-ghost" onclick="closeModal('addUserModal')">Cancel</button>
-          <button type="submit" class="btn btn-success" id="add-user-submit">
-            <i class="fa fa-user-plus"></i> Create User
           </button>
         </div>
       </form>
@@ -1887,45 +1793,6 @@
     showToast('{{ message|escapejs }}', '{% if message.tags == "error" %}error{% else %}success{% endif %}');
     {% endfor %}
     {% endif %}
-
-    /* ── Add User Modal ── */
-    var btnAddUser = document.getElementById('btn-add-user');
-    if (btnAddUser) {
-      btnAddUser.addEventListener('click', function () {
-        document.getElementById('add-user-form').reset();
-        document.getElementById('new-user-staff-fields').style.display = 'none';
-        document.getElementById('pw-mismatch-err').style.display = 'none';
-        openModal('addUserModal');
-      });
-    }
-
-    function toggleNewUserFields() {
-      var role = document.getElementById('new-user-role').value;
-      var staffFields = document.getElementById('new-user-staff-fields');
-      staffFields.style.display = (role === 'staff' || role === 'admin') ? 'block' : 'none';
-    }
-
-    /* Validate passwords match before submitting */
-    document.getElementById('add-user-form').addEventListener('submit', function (e) {
-      var pw  = document.getElementById('new-user-pw').value;
-      var pw2 = document.getElementById('new-user-pw-confirm').value;
-      var err = document.getElementById('pw-mismatch-err');
-      if (pw !== pw2) {
-        e.preventDefault();
-        err.style.display = 'block';
-        document.getElementById('new-user-pw-confirm').focus();
-        return;
-      }
-      err.style.display = 'none';
-      var btn = document.getElementById('add-user-submit');
-      btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Creating…';
-      btn.disabled = true;
-    });
-
-    /* Hide mismatch error as user types */
-    document.getElementById('new-user-pw-confirm').addEventListener('input', function () {
-      document.getElementById('pw-mismatch-err').style.display = 'none';
-    });
 
     /* ── Product Modal ── */
     document.getElementById('btn-add-product') && document.getElementById('btn-add-product').addEventListener('click', function () {

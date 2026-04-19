@@ -74,6 +74,23 @@ def login_sql_select(email, password):
         return False
 
 
+def login_by_username(username, password):
+    """
+    Fallback login using the `name` column instead of email.
+    Allows staff to sign in with their display name or an employee ID
+    stored in the name field, in addition to their email address.
+    Returns the matching user dict, or False if not found.
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT * FROM Users WHERE name = %s AND password = %s",
+            [username, password],
+        )
+        columns = [col[0] for col in cursor.description]
+        rows = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        return rows[0] if rows else False
+ 
+
 def register_sql_insert(name, email, password, phone=None, role="customer"):
     """
     Insert a new user row into `Users`.
@@ -1093,4 +1110,119 @@ def get_user_orders(user_id):
         cursor.execute(sql, [user_id])
         columns = [col[0] for col in cursor.description]
         return [dict(zip(columns, row)) for row in cursor.fetchall()]
+    
 
+def get_user_orders_with_items(user_id):
+    """
+    Fetch user orders along with their items.
+
+    Returns:
+    [
+        {
+            order_id,
+            order_date,
+            order_status,
+            totalPrice,
+            staff_id,
+            items: [
+                {
+                    orderItem_id,
+                    itemQuant_id,
+                    quantity,
+                    price
+                }
+            ]
+        }
+    ]
+    """
+
+    sql = """
+        SELECT 
+            o.order_id, o.order_date, o.order_status, o.totalPrice, o.staff_id,
+            oi.orderItem_id, oi.itemQuant_id, oi.quantity, oi.price
+        FROM Orders o
+        LEFT JOIN OrderItems oi ON o.order_id = oi.order_id
+        WHERE o.user_id = %s
+        ORDER BY o.order_date DESC, o.order_id DESC
+    """
+
+    with connection.cursor() as cursor:
+        cursor.execute(sql, [user_id])
+        rows = cursor.fetchall()
+
+    orders = {}
+
+    for row in rows:
+        (
+            order_id, order_date, order_status, totalPrice, staff_id,
+            orderItem_id, itemQuant_id, quantity, price
+        ) = row
+
+        # Create order if not exists
+        if order_id not in orders:
+            orders[order_id] = {
+                "order_id": order_id,
+                "order_date": order_date,
+                "order_status": order_status,
+                "totalPrice": totalPrice,
+                "staff_id": staff_id,
+                "items": []
+            }
+
+        # Add item if exists
+        if orderItem_id is not None:
+            orders[order_id]["items"].append({
+                "orderItem_id": orderItem_id,
+                "itemQuant_id": itemQuant_id,
+                "quantity": quantity,
+                "price": price
+            })
+
+    return list(orders.values())
+
+
+def create_order(user_id, order_date, order_status, totalPrice, items, staff_id = 0):
+    """
+    Create an order and its associated order items.
+
+    items: list of dicts like:
+        {
+            "itemQuant_id": int,
+            "quantity": int,
+            "price": float
+        }
+
+    Returns created order_id
+    """
+    order_sql = """
+        INSERT INTO Orders (user_id, order_date, order_status, totalPrice, staff_id)
+        VALUES (%s, %s, %s, %s, %s)
+        RETURNING order_id
+    """
+
+    item_sql = """
+        INSERT INTO OrderItems (order_id, itemQuant_id, quantity, price)
+        VALUES (%s, %s, %s, %s)
+    """
+
+    try:
+        with connection.cursor() as cursor:
+            # Insert order
+            cursor.execute(order_sql, [user_id, order_date, order_status, totalPrice, staff_id])
+            order_id = cursor.fetchone()[0]
+
+            # Insert related items
+            for item in items:
+                cursor.execute(item_sql, [
+                    order_id,
+                    item["item_id"],
+                    item["quantity"],
+                    item["line_total"]
+                ])
+
+            connection.commit()
+            return order_id
+
+    except Exception:
+        connection.rollback()
+        raise

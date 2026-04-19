@@ -2,10 +2,14 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    # Dashboard
+    # ── Auth ──────────────────────────────────────────────────────────────────
+    path("login/",  views.admin_login_view,  name="admin_login"),
+    path("logout/", views.admin_logout_view, name="admin_logout"),
+
+    # ── Dashboard ─────────────────────────────────────────────────────────────
     path("", views.dashboard, name="admin_dashboard"),
 
-    # Orders
+    # ── Orders ────────────────────────────────────────────────────────────────
     path(
         "orders/update-status/",
         views.admin_update_order_status,
@@ -17,7 +21,7 @@ urlpatterns = [
         name="admin_order_invoice",
     ),
 
-    # Products  — image served directly from the BLOB column in the item table
+    # ── Products  (image served from BLOB column) ──────────────────────────────
     path(
         "products/save/",
         views.admin_save_product,
@@ -34,7 +38,12 @@ urlpatterns = [
         name="admin_product_image",
     ),
 
-    # Users
+    # ── Users ─────────────────────────────────────────────────────────────────
+    path(
+        "users/add/",
+        views.admin_add_user,
+        name="admin_add_user",
+    ),
     path(
         "users/save/",
         views.admin_save_user,
