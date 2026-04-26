@@ -47,6 +47,9 @@ urlpatterns = [
     path("product/<int:product_id>/", views.product_detail, name="product_detail"),
     path("checkout/", views.checkout, name="checkout"),
 
+    path("wishlist/", views.wishlist_view, name="wishlist"),
+    path("wishlist/add/<int:product_id>/", views.add_to_wishlist, name="add_to_wishlist"),
+
     # =====================================================================
     # TO DO IN FUTURE
     # =====================================================================
@@ -84,14 +87,14 @@ urlpatterns = [
 #          HttpResponse(f"<h1>product_detail</h1><p>product_id={product_id}</p>"),
 #          name="product_detail"),
 
-    path("wishlist/",
-         lambda request: HttpResponse("<h1>wishlist</h1>"),
-         name="wishlist"),
+    # path("wishlist/",
+    #      lambda request: HttpResponse("<h1>wishlist</h1>"),
+    #      name="wishlist"),
 
-    path("wishlist/add/<int:product_id>/",
-         lambda request, product_id:
-         HttpResponse(f"<h1>add_to_wishlist</h1><p>product_id={product_id}</p>"),
-         name="add_to_wishlist"),
+    # path("wishlist/add/<int:product_id>/",
+    #      lambda request, product_id:
+    #      HttpResponse(f"<h1>add_to_wishlist</h1><p>product_id={product_id}</p>"),
+    #      name="add_to_wishlist"),
 
 #     path("checkout/",
 #          lambda request: HttpResponse("<h1>checkout</h1>"),

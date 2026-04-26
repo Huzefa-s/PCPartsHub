@@ -22,6 +22,9 @@ from database.data import (
     get_user_orders,
     get_user_by_email,   # ensure this exists in data.py – returns user dict or None
     create_order,
+    put_item_to_user_wishlist,
+    get_user_wishlist,
+    remove_user_wishlist,
 )
 
 
@@ -664,3 +667,86 @@ def checkout(request):
         "grand_total": grand_total,
     }
     return render(request, "webPages/FrontEnd_ClientView/checkout.html", context)
+
+
+def _get_wishlist(request, user_id):
+    """
+    Internal helper to read the wishlist from the session.
+    Wishlist is stored as a list of item_ids.
+    """
+    raw = get_user_wishlist(user_id)
+    wishlist = []
+    for v in raw:
+        try:
+            wishlist.append(int(v["itemQuant_id"]))
+        except (TypeError, ValueError):
+            continue
+    return list(dict.fromkeys(wishlist))  # deduplicate, keep order
+
+
+def _save_wishlist(request, wishlist, user_id):
+    remove_user_wishlist(user_id)
+
+    for i in wishlist:
+        put_item_to_user_wishlist(user_id, int(i))
+        
+    request.session.modified = True
+
+    
+
+def add_to_wishlist(request, product_id):
+
+    user_ctx = _session_user_context(request)
+    user_id = user_ctx["userID"]
+    
+
+    wishlist = _get_wishlist(request, user_id)
+    if product_id not in wishlist:
+        wishlist.append(product_id)
+        _save_wishlist(request, wishlist, user_id)
+
+    next_url = request.POST.get("next") or request.GET.get("next")
+    if next_url:
+        return redirect(next_url)
+    return redirect("wishlist")
+
+
+def wishlist_view(request):
+    user_ctx = _session_user_context(request)
+    user_id = user_ctx["userID"]
+
+    wishlist = _get_wishlist(request, user_id)
+
+    if request.method == "POST":
+        if "remove" in request.POST:
+            try:
+                item_id = int(request.POST.get("remove"))
+                wishlist = [i for i in wishlist if i != item_id]
+                _save_wishlist(request, wishlist, user_id)
+            except (TypeError, ValueError):
+                pass
+            return redirect("wishlist")
+        
+ 
+    items = get_items_by_ids(wishlist)
+    items_by_id = {item["item_id"]: item for item in items}
+
+    wishlist_items = []
+    for item_id in wishlist:
+        item = items_by_id.get(item_id)
+        if not item:
+            continue
+
+        if item.get("image"):
+            item["image_base64"] = base64.b64encode(item["image"]).decode("utf-8")
+        else:
+            item["image_base64"] = None
+
+        wishlist_items.append(item)
+
+    context = {
+        "user": user_ctx,
+        "wishlist_items": wishlist_items,
+    }
+
+    return render(request, "webPages/FrontEnd_ClientView/wishlist.html", context)

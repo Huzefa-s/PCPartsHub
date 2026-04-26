@@ -1,0 +1,88 @@
+{% extends "webPages/FrontEnd_ClientView/siteContainer.html" %}
+{% load static %}
+
+{% block element %}
+
+    <!-- Page Banner Section Start-->
+    <div class="page-banner-section section" style="background-image: url('{% static 'webPages/FrontEnd_ClientView/img/bg/page-banner.jpg' %}')">
+        <div class="container">
+            <div class="row">
+                
+                <!-- Page Title Start -->
+                <div class="page-title text-center col">
+                    <h1>Wishlist</h1>
+                </div><!-- Page Title End -->
+                
+            </div>
+        </div>
+    </div><!-- Page Banner Section End-->
+    
+       
+    <!-- Wishlist Section Start-->
+    <div class="wishlist-section section pt-120 pb-90">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                   
+                    <form action="{% url 'wishlist' %}" method="post">
+                        {% csrf_token %}
+                        <div class="table-responsive mb-30">
+                            <table class="table cart-table text-center">
+                                
+                                <!-- Table Head -->
+                                <thead>
+                                    <tr>
+                                        <th class="number">#</th>
+                                        <th class="image">image</th>
+                                        <th class="name">product name</th>
+                                        <th class="qty">stock status</th>
+                                        <th class="price">price</th>
+                                        <th class="total">add to cart</th>
+                                        <th class="remove">remove</th>
+                                    </tr>
+                                </thead>
+                                
+                                <!-- Table Body -->
+                                <tbody>
+                                    {% if wishlist_items %}
+                                        {% for item in wishlist_items %}
+                                            <tr>
+                                                <td><span class="cart-number">{{ forloop.counter }}</span></td>
+                                                <td>
+                                                    <a href="{% url 'product_detail' item.item_id %}" class="cart-pro-image">
+                                                        {% if item.image_base64 %}
+                                                            <img src="data:image/jpeg;base64,{{ item.image_base64 }}" alt="{{ item.itemName }}" />
+                                                        {% else %}
+                                                            <img src="{% static 'webPages/FrontEnd_ClientView/img/product/1.jpg' %}" alt="{{ item.itemName }}" />
+                                                        {% endif %}
+                                                    </a>
+                                                </td>
+                                                <td><a href="{% url 'product_detail' item.item_id %}" class="cart-pro-title">{{ item.itemName }}</a></td>
+                                                <td><p class="stock in-stock">in stock</p></td>
+                                                <td><p class="cart-pro-price">${{ item.basePrice }}</p></td>
+                                                <td>
+                                                    <a href="{% url 'add_to_cart' item.item_id %}" class="wl-add-cart-btn">add to cart</a>
+                                                </td>
+                                                <td>
+                                                    <button class="cart-pro-remove" type="submit" name="remove" value="{{ item.item_id }}">
+                                                        <i class="fa fa-trash-o"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="7">Your wishlist is empty.</td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </form>
+                    
+                </div>
+            </div>
+        </div>
+    </div><!-- Wishlist Section End-->
+
+{% endblock %}

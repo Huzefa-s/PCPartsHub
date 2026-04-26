@@ -1226,3 +1226,76 @@ def create_order(user_id, order_date, order_status, totalPrice, items, staff_id 
     except Exception:
         connection.rollback()
         raise
+
+
+# ---------------------------------------------------------------------------
+# Wishlist
+# ---------------------------------------------------------------------------
+
+def is_item_in_wishlist(user_id, item_id):
+    """
+    Check if an item already exists in the user's wishlist.
+    Returns True if exists, False otherwise.
+    """
+    sql = """
+        SELECT 1
+        FROM Wishlist
+        WHERE user_id = %s AND itemQuant_id = %s
+        LIMIT 1
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(sql, [user_id, item_id])
+        return cursor.fetchone() is not None
+
+
+def get_user_wishlist(user_id):
+    """
+    Fetch wishlist items for a user from the Wishlist table.
+    Returns a list of dicts with item_id.
+    """
+    sql = """
+        SELECT itemQuant_id
+        FROM Wishlist
+        WHERE user_id = %s
+        ORDER BY wishlist_id DESC
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(sql, [user_id])
+        columns = [col[0] for col in cursor.description]
+        return [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+
+def put_item_to_user_wishlist(user_id, item_id):
+    """
+    Insert item for a user into the Wishlist table
+    only if it does not already exist.
+    """
+    if is_item_in_wishlist(user_id, item_id):
+        return {"status": "exists", "message": "Item already in wishlist"}
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "INSERT INTO Wishlist (user_id, itemQuant_id) VALUES (%s, %s)",
+            [user_id, item_id],
+        )
+        connection.commit()
+
+    return {"status": "added", "message": "Item added to wishlist"}
+
+def remove_user_wishlist(user_id):
+    """
+    Remove all wishlist items for a given user.
+    """
+    sql = """
+        DELETE FROM Wishlist
+        WHERE user_id = %s
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(sql, [user_id])
+        affected_rows = cursor.rowcount
+        connection.commit()
+
+    return {
+        "status": "success",
+        "deleted_items": affected_rows
+    }
