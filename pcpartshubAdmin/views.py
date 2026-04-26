@@ -162,12 +162,41 @@ def dashboard(request):
         "todays_sales":    admin_data.get_todays_sales(),
         "sales_summary":   admin_data.get_sales_summary(),
         "inventory_value": admin_data.get_inventory_value(),
+        "complaints":      admin_data.get_complaints(),
         "user_role":       user_role,
         "user_id":         user_id,
         "username":        request.session.get("username", ""),
     }
     return render(request, "admin_ui.html", context)
 
+
+    return render(request, "admin_ui.html", context)
+
+
+# ─── Reports ─────────────────────────────────────────────────────────────────
+import csv
+
+@admin_staff_required
+def admin_export_sales(request):
+    """Export monthly sales report as CSV."""
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="monthly_sales_report.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['Order ID', 'Date', 'Customer ID', 'Total Price', 'Status', 'Payment Method'])
+
+    orders = admin_data.get_all_orders()
+    for order in orders:
+        writer.writerow([
+            order.get('order_id'),
+            order.get('order_date'),
+            order.get('user_id'),
+            order.get('totalPrice'),
+            order.get('order_status'),
+            order.get('paymentMethod')
+        ])
+
+    return response
 
 # ─── Orders ──────────────────────────────────────────────────────────────────
 
@@ -203,6 +232,26 @@ def admin_order_invoice(request, order_id):
         "order": details[0],
         "items":  details,
     })
+
+
+    return render(request, "order_invoice.html", {
+        "order": details[0],
+        "items":  details,
+    })
+
+
+# ─── Complaints ──────────────────────────────────────────────────────────────────
+
+@admin_staff_required
+@require_POST
+def admin_update_complaint(request):
+    """Update complaint status (e.g. mark as resolved)."""
+    complaint_id = request.POST.get("complaint_id")
+    status = request.POST.get("status")
+    if complaint_id and status:
+        admin_data.update_complaint_status(complaint_id, status)
+        messages.success(request, f"Complaint #{complaint_id} marked as {status}.")
+    return redirect("admin_dashboard")
 
 
 # ─── Products ────────────────────────────────────────────────────────────────

@@ -1049,6 +1049,14 @@
       <i class="fa fa-users"></i> Users
     </button>
 
+    <div class="nav-section-label" style="margin-top:12px;">Analytics & Feedback</div>
+    <button class="nav-link-item" data-tab="reports">
+      <i class="fa fa-line-chart"></i> Reports
+    </button>
+    <button class="nav-link-item" data-tab="complaints">
+      <i class="fa fa-comments"></i> Complaints
+    </button>
+
   </nav>
 
   <!-- ─────────── MAIN ─────────── -->
@@ -1062,6 +1070,16 @@
           <div class="page-subtitle">Welcome back, {{ username }}. Here's what's happening today.</div>
         </div>
       </div>
+
+      {% if low_stock_count > 0 %}
+      <div class="alert" style="background: rgba(192, 57, 43, 0.1); border: 1px solid rgba(192, 57, 43, 0.4); padding: 16px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
+        <div>
+            <strong style="color: var(--red); font-size: 16px;"><i class="fa fa-exclamation-triangle"></i> Automated Stock Alert</strong><br>
+            <span style="color: var(--ink-soft);">{{ low_stock_count }} items have fallen below the reorder threshold! Please restock immediately.</span>
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="switchTab('inventory')">Review Inventory</button>
+      </div>
+      {% endif %}
 
       <div class="stat-grid">
         <div class="stat-card orange">
@@ -1390,6 +1408,84 @@
     </div>
 
     
+    <!-- ══ REPORTS ══ -->
+    <div class="tab-panel" id="tab-reports">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Reports</div>
+          <div class="page-subtitle">Export financial data and sales performance.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Monthly Sales Export</div>
+        </div>
+        <div class="card-body" style="padding: 24px;">
+          <p class="mb-20">Download a full breakdown of the latest sales, orders, and total revenue to analyze performance.</p>
+          <a class="btn btn-primary" href="{% url 'admin_export_sales' %}">
+            <i class="fa fa-download"></i> Export as CSV
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ COMPLAINTS ══ -->
+    <div class="tab-panel" id="tab-complaints">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Complaints & Feedback</div>
+          <div class="page-subtitle">Review customer feedback and inquiries.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Customer ID</th>
+                <th>Feedback / Description</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for comp in complaints %}
+              <tr>
+                <td><strong>#{{ comp.user_id }}</strong></td>
+                <td style="max-width: 300px; white-space: normal;">{{ comp.description }}</td>
+                <td>
+                  <span class="status-pill status-{{ comp.status|lower }}">{{ comp.status }}</span>
+                </td>
+                <td>{{ comp.created_at }}</td>
+                <td>
+                  <form method="post" action="{% url 'admin_update_complaint' %}" style="display: inline-block;">
+                    {% csrf_token %}
+                    <input type="hidden" name="complaint_id" value="{{ comp.complaint_id }}">
+                    <select name="status" class="form-control" style="display:inline-block; width:100px; padding: 4px; font-size:12px;">
+                      <option value="Pending" {% if comp.status == 'Pending' %}selected{% endif %}>Pending</option>
+                      <option value="Resolved" {% if comp.status == 'Resolved' %}selected{% endif %}>Resolved</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                  </form>
+                  <a href="mailto:?subject=Response to your PCPartsHub Feedback&body=Hello," class="btn btn-ghost btn-sm" title="Respond via email">
+                    <i class="fa fa-envelope"></i>
+                  </a>
+                </td>
+              </tr>
+              {% empty %}
+              <tr class="empty-row">
+                <td colspan="5"><i class="fa fa-inbox fa-2x" style="display:block;margin:0 auto 8px;opacity:.3;"></i>No complaints found.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </main>
 
   <!-- ─────────── TOAST CONTAINER ─────────── -->

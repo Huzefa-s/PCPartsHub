@@ -73,10 +73,12 @@
                                             <li><a href="{% url 'myaccount' %}" title="My Account"><i class="fa fa-cog"></i></a></li>
                                             <li><a href="{% url 'wishlist' %}" title="Wishlist"><i class="fa fa-heart-o"></i></a></li>
                                             <li><a href="{% url 'cart' %}" title="Cart"><i class="fa fa-shopping-cart"></i></a></li>
+                                            <li><a href="{% url 'track_order' %}" title="Track Order"><i class="fa fa-truck" style="color:#c9a352;"></i></a></li>
                                             <li><a href="{% url 'logout' %}" title="Logout" style="color:#c9a352;"><i class="fa fa-sign-out"></i></a></li>
                                             {% else %}
                                             <li><a href="{% url 'login' %}" title="Login"><i class="fa fa-sign-in"></i></a></li>
                                             <li><a href="{% url 'register' %}" title="Register"><i class="fa fa-user-plus"></i></a></li>
+                                            <li><a href="{% url 'track_order' %}" title="Track Order"><i class="fa fa-truck" style="color:#c9a352;"></i></a></li>
                                             {% endif %}
                                         </ul>
                                     </div>

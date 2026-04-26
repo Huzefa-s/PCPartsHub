@@ -1,0 +1,81 @@
+{% extends "webPages/FrontEnd_ClientView/siteContainer.html" %}
+{% load static %}
+
+{% block element %}
+
+<!-- Page Banner Section Start-->
+<div class="page-banner-section section" style="background-image: url('{% static 'webPages/FrontEnd_ClientView/img/bg/page-banner.jpg' %}')">
+    <div class="container">
+        <div class="row">
+            
+            <!-- Page Title Start -->
+            <div class="page-title text-center col">
+                <h1>Track Order</h1>
+            </div><!-- Page Title End -->
+            
+        </div>
+    </div>
+</div><!-- Page Banner Section End-->
+
+<div class="track-order-section section pt-100 pb-100">
+    <div class="container">
+        
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-12 mb-50">
+                <div class="track-form-wrapper">
+                    <h3>Track Your Order</h3>
+                    <p>Enter your Order ID to tracking the current status of your purchase.</p>
+                    <form action="{% url 'track_order' %}" method="post">
+                        {% csrf_token %}
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" placeholder="Order ID" name="order_id" required>
+                            <div class="input-group-append">
+                                <button class="btn btn-dark" type="submit" style="background-color: #c9a352; border: none;">Track Now</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {% if searched %}
+            {% if order %}
+            <div class="row justify-content-center mt-30">
+                <div class="col-md-8 col-12">
+                    <div class="card bg-dark text-white border-secondary">
+                        <div class="card-header border-secondary">
+                            <h4 class="mb-0">Status: <span style="color: #c9a352;">{{ order.order_status }}</span></h4>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Order Number:</strong> #{{ order.order_id }}</p>
+                            <p><strong>Date Placed:</strong> {{ order.order_date }}</p>
+                            {% if order.trackingID %}
+                                <p><strong>Tracking ID:</strong> {{ order.trackingID }}</p>
+                            {% endif %}
+                            
+                            <hr class="border-secondary">
+                            <h5>Order Items:</h5>
+                            <ul>
+                                {% for item in items %}
+                                    <li>{{ item.quantity }}x {{ item.itemName }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="row justify-content-center mt-30">
+                <div class="col-md-8 col-12 text-center">
+                    <div class="alert alert-danger">
+                        Sorry, we couldn't find an order with that ID. Please check and try again.
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        {% endif %}
+
+    </div>
+</div>
+
+{% endblock %}

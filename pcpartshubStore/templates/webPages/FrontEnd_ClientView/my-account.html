@@ -35,6 +35,7 @@
                                     <li data-form="address-form">Addresses</li>
                                     <li data-form="payment-form">Payment Methods</li>
                                     <li data-form="orders-form">Order History</li>
+                                    <li data-form="complaint-form">Submit Feedback/Complaint</li>
                                 </ul>
 
                                 <!-- Profile -->
@@ -170,6 +171,32 @@
                                             </tbody>
                                         </table>
                                     </div>
+                                </div>
+
+                                <!-- Complaints / Feedback -->
+                                <div class="complaint-form account-form" style="display: none;">
+                                    <h5 class="mb-20">Submit Feedback / Complaint</h5>
+                                    <form action="{% url 'submit_complaint' %}" method="post">
+                                        {% csrf_token %}
+                                        <div class="row">
+                                            <div class="input-box col-12 mb-20">
+                                                <label for="rating">Star Rating:</label>
+                                                <select name="rating" id="rating" style="width: auto;">
+                                                    <option value="5">5 - Excellent</option>
+                                                    <option value="4">4 - Good</option>
+                                                    <option value="3">3 - Average</option>
+                                                    <option value="2">2 - Poor</option>
+                                                    <option value="1">1 - Terrible</option>
+                                                </select>
+                                            </div>
+                                            <div class="input-box col-12 mb-20">
+                                                <textarea name="description" placeholder="Please describe your complaint or feedback here..." rows="5" required></textarea>
+                                            </div>
+                                            <div class="input-box col-12 mb-20">
+                                                <button type="submit" class="button">Submit</button>
+                                            </div>
+                                        </div>
+                                    </form>
                                 </div>
 
                             </div>

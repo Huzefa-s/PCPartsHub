@@ -59,4 +59,18 @@ urlpatterns = [
         views.get_user_details,
         name="admin_get_user_details",
     ),
+
+    # ── Complaints ────────────────────────────────────────────────────────────
+    path(
+        "complaints/update/",
+        views.admin_update_complaint,
+        name="admin_update_complaint",
+    ),
+
+    # ── Reports ───────────────────────────────────────────────────────────────
+    path(
+        "reports/export/sales/",
+        views.admin_export_sales,
+        name="admin_export_sales",
+    ),
 ]

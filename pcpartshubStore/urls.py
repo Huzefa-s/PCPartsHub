@@ -25,12 +25,14 @@ urlpatterns = [
 
     path("logout/", views.logout_view, name="logout"),
     path("register/address/", views.register_address, name="register_address"),
+    path("track/", views.track_order, name="track_order"),
 
     # ---------- My Account ----------
     path("myaccount/", views.myaccount, name="myaccount"),
     path("myaccount/addresses/", views.manage_addresses, name="manage_addresses"),
     path("myaccount/payment/", views.manage_payment_method, name="manage_payment_method"),
     path("update_profile/", views.update_profile, name="update_profile"),
+    path("complaint/submit/", views.submit_complaint, name="submit_complaint"),
 
     # ---------- Utility ----------
     path("under-construction/", views.under_construction, name="under_construction"),
