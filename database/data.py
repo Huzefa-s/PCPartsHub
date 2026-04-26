@@ -261,9 +261,10 @@ def get_items_by_ids(item_ids):
         return _rows_to_dicts(cursor)
 
 
-def fetch_items(category=None, subcategory=None):
+def fetch_items(category=None, subcategory=None, search=None):
     """
-    Return items optionally filtered by category and/or subcategory.
+    Return items optionally filtered by category, subcategory, and/or a
+    name search term (case-insensitive partial match).
     Joins Items → SubCategory → Category.
     """
     sql = """
@@ -276,6 +277,8 @@ def fetch_items(category=None, subcategory=None):
         conditions.append("c.categoryName = %s"); params.append(category)
     if subcategory:
         conditions.append("s.subCatName = %s");   params.append(subcategory)
+    if search:
+        conditions.append("i.itemName LIKE %s");   params.append(f"%{search}%")
     if conditions:
         sql += " WHERE " + " AND ".join(conditions)
     sql += " GROUP BY i.item_id"
@@ -283,6 +286,11 @@ def fetch_items(category=None, subcategory=None):
     with connection.cursor() as cursor:
         cursor.execute(sql, params)
         return _rows_to_dicts(cursor)
+
+
+def fetch_categories():
+    """Return all category rows as dicts (cat_id, categoryName)."""
+    return custom_sql_select("SELECT cat_id, categoryName FROM Category ORDER BY categoryName")
 
 
 def get_item_by_id(item_id):

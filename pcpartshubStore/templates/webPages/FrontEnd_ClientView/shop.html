@@ -7,124 +7,249 @@
 <div class="page-banner-section section" style="background-image: url('{% static 'webPages/FrontEnd_ClientView/img/bg/page-banner.jpg' %}')">
     <div class="container">
         <div class="row">
-            
             <!-- Page Title Start -->
             <div class="page-title text-center col">
-                <h1>shop page</h1>
+                <h1>Shop</h1>
             </div><!-- Page Title End -->
-            
         </div>
     </div>
 </div><!-- Page Banner Section End-->
 
-   
+<style>
+/* ── Category Sidebar ─────────────────────────────────────────── */
+.shop-sidebar {
+    padding-left: 20px;
+}
+
+.sidebar-widget {
+    background: #1a1a1a;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 4px;
+    padding: 24px 20px;
+    margin-bottom: 30px;
+}
+
+.sidebar-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #c9a352;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.category-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.category-list li {
+    margin-bottom: 6px;
+}
+
+.category-list li a {
+    display: block;
+    padding: 9px 14px;
+    border-radius: 3px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+    text-decoration: none;
+    transition: background 0.18s, color 0.18s;
+    border: 1px solid transparent;
+}
+
+.category-list li a:hover {
+    background: rgba(201,163,82,0.08);
+    color: #c9a352;
+    border-color: rgba(201,163,82,0.15);
+    text-decoration: none;
+}
+
+.category-list li a.active-cat {
+    background: rgba(201,163,82,0.12);
+    color: #c9a352;
+    border-color: rgba(201,163,82,0.3);
+    font-weight: 600;
+}
+
+/* ── Search/Active banner ─────────────────────────────────────── */
+.shop-filter-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 28px;
+    padding: 12px 16px;
+    background: rgba(201,163,82,0.06);
+    border: 1px solid rgba(201,163,82,0.15);
+    border-radius: 4px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.65);
+}
+
+.shop-filter-bar strong { color: #c9a352; }
+
+.shop-filter-bar a {
+    color: rgba(255,255,255,0.35);
+    font-size: 12px;
+    text-decoration: none;
+}
+
+.shop-filter-bar a:hover { color: #c9a352; }
+</style>
+
 <!-- Product Section Start-->
-<div class="product-section section pt-120 pb-120">
+<div class="product-section section pt-80 pb-120">
     <div class="container">
-        
-        <!-- Product Wrapper Start-->
         <div class="row">
 
-            {% for product in products %}
+            <!-- ── Products Column ─────────────────────────────── -->
+            <div class="col-lg-9 col-12">
 
-            <div class="col-lg-4 col-md-6 col-12 mb-60">
-                            
-                <div class="product">
-
-                    <!-- Image Wrapper -->
-                    <div class="image">
-                        <!-- Image -->
-                        <a href="{% url 'product_detail' product.item_id %}" class="img">
-                            {% if product.image_base64 %}
-                                <img src="data:image/jpeg;base64,{{ product.image_base64 }}" alt="{{ product.itemName }}">
-                            {% else %}
-                                <img src="{% static 'webPages/FrontEnd_ClientView/img/product/default.jpg' %}">
-                            {% endif %}
-                        </a>
-                        <!-- Wishlist -->
-                        <a href="#" class="wishlist"><i class="fa fa-heart-o"></i></a>
-                        <!-- Label -->
-                        <span class="label">New</span>
-                    </div>
-                    
-                    <!-- Content -->
-                    <div class="content">
-                        
-                        <!-- Head Content -->
-                        <div class="head fix">
-                        
-                            <!-- Title & Category -->
-                            <div class="title-category float-left">
-                                <h5 class="title"><a href="{% url 'product_detail' product.item_id %}">{{product.itemName}}</a></h5>
-                                <a href="../shop" class="category">Catalog</a>
-                            </div>
-                            <!-- Price -->
-                            <div class="price float-right">
-                                <span class="new">${{product.basePrice}}</span>
-                                <!-- Old Price Mockup If Need -->
-                                <!-- <span class="old">$46</span> -->
-                            </div>
-                            
-                        </div>
-                        
-                        <!-- Action Button -->
-                        <div class="action-button fix">
-                            <a href="{% url 'add_to_cart' product.item_id %}?qty=1&next={{ request.path }}">add to cart</a>
-                        </div>
-                        
-                    </div>
-
+                <!-- Active filter banner -->
+                {% if search_query or category %}
+                <div class="shop-filter-bar">
+                    <span>
+                        {% if search_query %}
+                            Showing results for: <strong>{{ search_query }}</strong>
+                            {% if category %} in <strong>{{ category }}</strong>{% endif %}
+                        {% elif category %}
+                            Category: <strong>{{ category }}</strong>
+                            {% if subcategory %} › <strong>{{ subcategory }}</strong>{% endif %}
+                        {% endif %}
+                        — {{ products|length }} product{{ products|length|pluralize }} shown
+                    </span>
+                    <a href="{% url 'shop' %}">✕ Clear filters</a>
                 </div>
-                
-            </div>
+                {% endif %}
 
-            {% endfor %}
+                <!-- Product Wrapper -->
+                <div class="row">
 
-            
-            
-            
-            <!-- Pagination Start -->
-            <div class="pagination col-12 mt-20">
-                <ul>
-                    {% for page in pages %}
-                        {% if page == current_page %}
-                            <li class="active"><a href="#">{{ page }}</a></li>
-                        {% else %}
-                            <li>
-                                {% if category and subcategory %}
-                                    <a href="{% url 'shop' page category subcategory %}">{{ page }}</a>
-                                {% elif category %}
-                                    <a href="{% url 'shop' page category %}">{{ page }}</a>
-                                {% else %}
-                                    <a href="{% url 'shop' page %}">{{ page }}</a>
-                                {% endif %}
-                            </li>
-                        {% endif %}
+                    {% for product in products %}
+                    <div class="col-lg-4 col-md-6 col-12 mb-60">
+                        <div class="product">
+                            <!-- Image Wrapper -->
+                            <div class="image">
+                                <a href="{% url 'product_detail' product.item_id %}" class="img">
+                                    {% if product.image_base64 %}
+                                        <img src="data:image/jpeg;base64,{{ product.image_base64 }}" alt="{{ product.itemName }}">
+                                    {% else %}
+                                        <img src="{% static 'webPages/FrontEnd_ClientView/img/product/default.jpg' %}">
+                                    {% endif %}
+                                </a>
+                                <a href="{% url 'add_to_wishlist' product.item_id %}?next={{ request.path }}" class="wishlist">
+                                    {% if product.item_id in wishlist_ids %}
+                                    <i class="fa fa-heart" style="color:#c9a352;"></i>
+                                    {% else %}
+                                    <i class="fa fa-heart-o"></i>
+                                    {% endif %}
+                                </a>
+                                <span class="label">New</span>
+                            </div>
+
+                            <!-- Content -->
+                            <div class="content">
+                                <div class="head fix">
+                                    <div class="title-category float-left">
+                                        <h5 class="title"><a href="{% url 'product_detail' product.item_id %}">{{ product.itemName }}</a></h5>
+                                        <a href="{% url 'shop' %}" class="category">Catalog</a>
+                                    </div>
+                                    <div class="price float-right">
+                                        <span class="new">${{ product.basePrice }}</span>
+                                    </div>
+                                </div>
+                                <div class="action-button fix">
+                                    <a href="{% url 'add_to_cart' product.item_id %}?qty=1&next={{ request.path }}{% if search_query %}%3Fq={{ search_query }}{% endif %}">add to cart</a>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12 text-center" style="padding:60px 0; color:rgba(255,255,255,0.4);">
+                        <i class="fa fa-search" style="font-size:40px; display:block; margin-bottom:16px;"></i>
+                        <p>No products found{% if search_query %} for "<strong style="color:#c9a352;">{{ search_query }}</strong>"{% endif %}.</p>
+                        <a href="{% url 'shop' %}" style="color:#c9a352;">Browse all products →</a>
+                    </div>
                     {% endfor %}
-                    <li class="arrows">
-                        {% if current_page < pages|length %}
-                            {% with next_page=current_page|add:1 %}
-                                {% if category and subcategory %}
-                                    <a href="{% url 'shop' next_page category subcategory %}"><i class="fa fa-angle-right"></i></a>
-                                {% elif category %}
-                                    <a href="{% url 'shop' next_page category %}"><i class="fa fa-angle-right"></i></a>
-                                {% else %}
-                                    <a href="{% url 'shop' next_page %}"><i class="fa fa-angle-right"></i></a>
-                                {% endif %}
-                            {% endwith %}
-                        {% else %}
-                            <a href="#"><i class="fa fa-angle-right"></i></a>
-                        {% endif %}
-                    </li>
-                </ul>
-            </div>
-            <!-- Pagination End -->
 
-            
-        </div><!-- Product Wrapper End-->
-        
+                </div><!-- Product Wrapper End -->
+
+                <!-- Pagination -->
+                {% if pages|length > 1 %}
+                <div class="pagination col-12 mt-20">
+                    <ul>
+                        {% for page in pages %}
+                            {% if page == current_page %}
+                                <li class="active"><a href="#">{{ page }}</a></li>
+                            {% else %}
+                                <li>
+                                    {% if search_query %}
+                                        <a href="{% url 'shop' page %}?q={{ search_query }}">{{ page }}</a>
+                                    {% elif category and subcategory %}
+                                        <a href="{% url 'shop' page category subcategory %}">{{ page }}</a>
+                                    {% elif category %}
+                                        <a href="{% url 'shop' page category %}">{{ page }}</a>
+                                    {% else %}
+                                        <a href="{% url 'shop' page %}">{{ page }}</a>
+                                    {% endif %}
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        <li class="arrows">
+                            {% if current_page < pages|length %}
+                                {% with next_page=current_page|add:1 %}
+                                    {% if search_query %}
+                                        <a href="{% url 'shop' next_page %}?q={{ search_query }}"><i class="fa fa-angle-right"></i></a>
+                                    {% elif category and subcategory %}
+                                        <a href="{% url 'shop' next_page category subcategory %}"><i class="fa fa-angle-right"></i></a>
+                                    {% elif category %}
+                                        <a href="{% url 'shop' next_page category %}"><i class="fa fa-angle-right"></i></a>
+                                    {% else %}
+                                        <a href="{% url 'shop' next_page %}"><i class="fa fa-angle-right"></i></a>
+                                    {% endif %}
+                                {% endwith %}
+                            {% else %}
+                                <a href="#"><i class="fa fa-angle-right"></i></a>
+                            {% endif %}
+                        </li>
+                    </ul>
+                </div>
+                {% endif %}
+                <!-- Pagination End -->
+
+            </div><!-- Products Column End -->
+
+
+            <!-- ── Category Sidebar ────────────────────────────── -->
+            <div class="col-lg-3 col-12 shop-sidebar">
+                <div class="sidebar-widget">
+                    <h4 class="sidebar-title">Categories</h4>
+                    <ul class="category-list">
+                        <li>
+                            <a href="{% url 'shop' %}" class="{% if not category and not search_query %}active-cat{% endif %}">
+                                All Products
+                            </a>
+                        </li>
+                        {% for cat in categories %}
+                        <li>
+                            <a href="{% url 'shop' 1 cat.categoryName %}"
+                               class="{% if category == cat.categoryName %}active-cat{% endif %}">
+                                {{ cat.categoryName }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div><!-- Sidebar End -->
+
+        </div>
     </div>
 </div><!-- Product Section End-->
-
 
 {% endblock %}

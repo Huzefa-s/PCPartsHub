@@ -69,15 +69,14 @@
                                     <div class="account-menu col-md-4 col-12">
                                         <ul>
                                             {% if user.is_authenticated %}
-                                            <li><a href="#">Welcome,  {{ user.username }}</a></li>
+                                            <li><a href="#" title="Welcome"><i class="fa fa-user"></i> {{ user.username }}</a></li>
+                                            <li><a href="{% url 'myaccount' %}" title="My Account"><i class="fa fa-cog"></i></a></li>
+                                            <li><a href="{% url 'wishlist' %}" title="Wishlist"><i class="fa fa-heart-o"></i></a></li>
+                                            <li><a href="{% url 'cart' %}" title="Cart"><i class="fa fa-shopping-cart"></i></a></li>
+                                            <li><a href="{% url 'logout' %}" title="Logout" style="color:#c9a352;"><i class="fa fa-sign-out"></i></a></li>
                                             {% else %}
-                                            <li><a href="{% url 'login' %}">Login</a></li>
-                                            <li><a href="{% url 'register' %}">Register</a></li>
-                                            {% endif %}
-                                            {% if user.is_authenticated %}
-                                            <li><a href="{% url 'myaccount' %}">My Account</a></li>
-                                            <li><a href="{% url 'wishlist' %}">Wishlist</a></li>
-                                            <li><a href="{% url 'cart' %}"><i class="fa fa-shopping-cart"></i></a></li>
+                                            <li><a href="{% url 'login' %}" title="Login"><i class="fa fa-sign-in"></i></a></li>
+                                            <li><a href="{% url 'register' %}" title="Register"><i class="fa fa-user-plus"></i></a></li>
                                             {% endif %}
                                         </ul>
                                     </div>
@@ -134,9 +133,9 @@
 
                                 <!-- Search Form -->
                                 <div class="header-search-form">
-                                    <form action="#">
-                                        <input type="text" placeholder="Search...">
-                                        <button><i class="ion-ios-search-strong"></i></button>
+                                    <form action="{% url 'shop' %}" method="get">
+                                        <input type="text" name="q" placeholder="Search products..." value="{{ request.GET.q|default:'' }}">
+                                        <button type="submit"><i class="ion-ios-search-strong"></i></button>
                                     </form>
                                 </div>
 

@@ -9,6 +9,7 @@ from datetime import datetime;
 from database.data import (
     custom_sql_select,
     fetch_items,
+    fetch_categories,
     get_item_by_id,
     get_items_by_ids,
     login_sql_select,
@@ -117,10 +118,14 @@ def index(request):
         else:
             item["image_base64"] = None
 
+    wishlist_ids = []
+    if user_ctx.get("is_authenticated"):
+        wishlist_ids = _get_wishlist(request, user_ctx["userID"])
+
     return render(
         request,
         "webPages/FrontEnd_ClientView/index.html",
-        {"user": user_ctx, "featured_products": products},
+        {"user": user_ctx, "featured_products": products, "wishlist_ids": wishlist_ids},
     )
 
 
@@ -277,7 +282,7 @@ def register_submit(request):
     if login_data and isinstance(login_data, dict):
         _populate_session_from_user(request, login_data)
         messages.success(request, "Account created! Welcome aboard.")
-        return redirect("myaccount")
+        return redirect("register_address")
 
     messages.error(request, "Registration succeeded but auto-login failed. Please log in.")
     return redirect("login")
@@ -415,14 +420,62 @@ def logout_view(request):
 
 
 # ---------------------------------------------------------------------------
+# Register Address (step shown right after sign-up)
+# ---------------------------------------------------------------------------
+
+def register_address(request):
+    """
+    Shown immediately after registration so the user can add their first address.
+    GET  → render the address form.
+    POST → validate → save address → redirect to myaccount.
+    Skip link also redirects to myaccount without saving.
+    """
+    _ensure_session_defaults(request)
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return redirect("login")
+
+    if request.method == "POST":
+        if "skip" in request.POST:
+            return redirect("myaccount")
+
+        province     = request.POST.get("province", "").strip()
+        city         = request.POST.get("city", "").strip()
+        area         = request.POST.get("area", "").strip()
+        house_number = request.POST.get("houseNumber", "").strip()
+
+        if province and city and area and house_number:
+            addr_id = create_address(province, city, area, house_number)
+            link_user_address(user_id, addr_id)
+            messages.success(request, "Address saved successfully.")
+        else:
+            messages.error(request, "All address fields are required.")
+            return render(request, "webPages/FrontEnd_ClientView/register-address.html",
+                          {"user": _session_user_context(request)})
+
+        return redirect("myaccount")
+
+    return render(request, "webPages/FrontEnd_ClientView/register-address.html",
+                  {"user": _session_user_context(request)})
+
+
+
+
+# ---------------------------------------------------------------------------
 # Shop
 # ---------------------------------------------------------------------------
 
-def shop(request, current_page = 1, category = '', subcategory = ''):
+def shop(request, current_page=1, category='', subcategory=''):
     user_ctx = _session_user_context(request)
     limit_on_single_page = 12
 
-    result = fetch_items(category or None, subcategory or None)
+    search_query = request.GET.get('q', '').strip()
+
+    result = fetch_items(
+        category or None,
+        subcategory or None,
+        search=search_query or None,
+    )
 
     for item in result:
         if item.get("image"):
@@ -438,14 +491,25 @@ def shop(request, current_page = 1, category = '', subcategory = ''):
     end = current_page * limit_on_single_page
     result_selected = result[start:end]
 
+    categories = fetch_categories()
+
+    wishlist_ids = []
+    if user_ctx.get("is_authenticated"):
+        wishlist_ids = _get_wishlist(request, user_ctx["userID"])
+
     return render(
         request,
         "webPages/FrontEnd_ClientView/shop.html",
         {
-            "products": result_selected,
-            "pages": pages,
-            "user": user_ctx,
+            "products":     result_selected,
+            "pages":        pages,
+            "user":         user_ctx,
             "current_page": current_page,
+            "category":     category,
+            "subcategory":  subcategory,
+            "search_query": search_query,
+            "categories":   categories,
+            "wishlist_ids": wishlist_ids,
         },
     )
 
@@ -695,15 +759,20 @@ def _save_wishlist(request, wishlist, user_id):
     
 
 def add_to_wishlist(request, product_id):
-
     user_ctx = _session_user_context(request)
+    
+    if not user_ctx.get("is_authenticated"):
+        return redirect("login")
+
     user_id = user_ctx["userID"]
     
-
     wishlist = _get_wishlist(request, user_id)
     if product_id not in wishlist:
         wishlist.append(product_id)
-        _save_wishlist(request, wishlist, user_id)
+    else:
+        wishlist.remove(product_id)
+        
+    _save_wishlist(request, wishlist, user_id)
 
     next_url = request.POST.get("next") or request.GET.get("next")
     if next_url:

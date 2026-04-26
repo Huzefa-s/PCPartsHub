@@ -78,7 +78,11 @@
                         </a>
                         <!-- Wishlist -->
                         <a href="{% url 'add_to_wishlist' product.item_id %}?next={{ request.path }}" class="wishlist">
+                            {% if product.item_id in wishlist_ids %}
+                            <i class="fa fa-heart" style="color:#c9a352;"></i>
+                            {% else %}
                             <i class="fa fa-heart-o"></i>
+                            {% endif %}
                         </a>
                         <!-- Label -->
                         <span class="label">New</span>

@@ -24,6 +24,7 @@ urlpatterns = [
     path("register/submit/", views.register_submit, name="register_submit"),
 
     path("logout/", views.logout_view, name="logout"),
+    path("register/address/", views.register_address, name="register_address"),
 
     # ---------- My Account ----------
     path("myaccount/", views.myaccount, name="myaccount"),
