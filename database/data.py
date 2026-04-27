@@ -147,6 +147,27 @@ def get_user_by_id(user_id):
         return rows[0] if rows else None
 
 
+def change_user_password(user_id, old_password, new_password):
+    """
+    Change user password if old_password matches.
+    """
+    user = get_user_by_id(user_id)
+    if not user:
+        return False
+    
+    if not check_password(old_password, user["password"]):
+        return False
+        
+    hashed_password = make_password(new_password)
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "UPDATE Users SET password = %s WHERE user_id = %s",
+            [hashed_password, user_id]
+        )
+        connection.commit()
+        return cursor.rowcount > 0
+
+
 def update_profile_sql(user_id, name=None, email=None, phone=None):
     """
     Update Users fields for a given user_id.
@@ -702,6 +723,17 @@ def get_orders_by_date_range(start_date, end_date):
 def update_order_status(order_id, status):
     """Update the status of a single order."""
     with connection.cursor() as cursor:
+        cursor.execute("SELECT order_status FROM Orders WHERE order_id = %s", [order_id])
+        row = cursor.fetchone()
+        if not row:
+            return False
+        
+        old_status = row[0]
+        if status == 'Cancelled' and old_status != 'Cancelled':
+            cursor.execute("SELECT itemQuant_id, quantity FROM OrderItems WHERE order_id = %s", [order_id])
+            for q_row in cursor.fetchall():
+                cursor.execute("UPDATE ItemsQuant SET stock = stock + %s WHERE itemQuant_id = %s", [q_row[1], q_row[0]])
+
         cursor.execute(
             "UPDATE Orders SET order_status = %s WHERE order_id = %s",
             [status, order_id],
@@ -886,6 +918,13 @@ def get_or_create_category(category_name):
         connection.commit()
         return cursor.lastrowid
 
+
+def get_item_total_stock(item_id):
+    """Return total stock across all variants for an item_id"""
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT COALESCE(SUM(stock), 0) FROM ItemsQuant WHERE item_id = %s", [item_id])
+        row = cursor.fetchone()
+        return row[0] if row else 0
 
 def get_product_categories(item_id):
     """Return all category/subcategory associations for a product."""
@@ -1221,12 +1260,22 @@ def create_order(user_id, order_date, order_status, totalPrice, items, staff_id 
 
             # Insert related items
             for item in items:
+                cursor.execute("SELECT itemQuant_id FROM ItemsQuant WHERE item_id = %s LIMIT 1", [item["item_id"]])
+                q_row = cursor.fetchone()
+                item_quant_id = q_row[0] if q_row else item["item_id"]
+
                 cursor.execute(item_sql, [
                     order_id,
-                    item["item_id"],
+                    item_quant_id,
                     item["quantity"],
                     item["line_total"]
                 ])
+                
+                # Decrease stock
+                cursor.execute(
+                    "UPDATE ItemsQuant SET stock = stock - %s WHERE itemQuant_id = %s",
+                    [item["quantity"], item_quant_id]
+                )
 
             connection.commit()
             return order_id
@@ -1307,3 +1356,28 @@ def remove_user_wishlist(user_id):
         "status": "success",
         "deleted_items": affected_rows
     }
+
+
+def get_first_item_quant_id(item_id):
+    """
+    Returns the first itemQuant_id for a given item_id.
+    """
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT itemQuant_id FROM ItemsQuant WHERE item_id = %s ORDER BY itemQuant_id LIMIT 1", [item_id])
+        row = cursor.fetchone()
+        return row[0] if row else None
+
+
+def get_user_wishlist_item_ids(user_id):
+    """
+    Returns a list of integer item_ids for the user's wishlist, helpful for view templates.
+    """
+    sql = """
+        SELECT iq.item_id
+        FROM Wishlist w
+        JOIN ItemsQuant iq ON w.itemQuant_id = iq.itemQuant_id
+        WHERE w.user_id = %s
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(sql, [user_id])
+        return [row[0] for row in cursor.fetchall()]

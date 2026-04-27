@@ -25,7 +25,9 @@ from database.data import (
     create_order,
     put_item_to_user_wishlist,
     get_user_wishlist,
+    get_user_wishlist,
     remove_user_wishlist,
+    change_user_password,
 )
 
 
@@ -120,7 +122,8 @@ def index(request):
 
     wishlist_ids = []
     if user_ctx.get("is_authenticated"):
-        wishlist_ids = _get_wishlist(request, user_ctx["userID"])
+        from database.data import get_user_wishlist_item_ids
+        wishlist_ids = get_user_wishlist_item_ids(user_ctx["userID"])
 
     return render(
         request,
@@ -153,7 +156,7 @@ def submit_complaint(request):
             from django.db import connection
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "INSERT INTO Complaint (user_id, description, status, created_at) VALUES (%s, %s, 'Pending', datetime('now'))",
+                    "INSERT INTO Complaint (user_id, message, status, created_at) VALUES (%s, %s, 'Pending', datetime('now'))",
                     [user_id, full_description]
                 )
             messages.success(request, "Your feedback/complaint has been submitted. Thank you!")
@@ -431,13 +434,57 @@ def update_profile(request):
 
     return redirect("myaccount")
 
+# ---------------------------------------------------------------------------
+# Change Password
+# ---------------------------------------------------------------------------
+
+def change_password(request):
+    """
+    Handle POST request to change the user's password.
+    """
+    if request.method == "POST":
+        _ensure_session_defaults(request)
+        user_id = request.session.get("user_id")
+        if not user_id:
+            messages.error(request, "You must be logged in to change your password.")
+            return redirect("myaccount")
+
+        old_pass = request.POST.get("old_password", "").strip()
+        new_pass = request.POST.get("new_password", "").strip()
+        confirm_pass = request.POST.get("confirm_new_password", "").strip()
+
+        if not old_pass or not new_pass or not confirm_pass:
+            messages.error(request, "All password fields are required.")
+            return redirect("myaccount")
+
+        if new_pass != confirm_pass:
+            messages.error(request, "New password and confirm password do not match.")
+            return redirect("myaccount")
+
+        pw_errors = _validate_password(new_pass)
+        if pw_errors:
+            for err in pw_errors:
+                messages.error(request, err)
+            return redirect("myaccount")
+
+        success = change_user_password(user_id, old_pass, new_pass)
+        if success:
+            messages.success(request, "Password changed successfully.")
+        else:
+            messages.error(request, "Incorrect old password.")
+
+    return redirect("myaccount")
+
 
 # ---------------------------------------------------------------------------
 # Logout
 # ---------------------------------------------------------------------------
 
 def logout_view(request):
+    cart = request.session.get("cart", {})
     request.session.flush()
+    if cart:
+        request.session["cart"] = cart
     return redirect("index")
 
 
@@ -470,10 +517,13 @@ def register_address(request):
             addr_id = create_address(province, city, area, house_number)
             link_user_address(user_id, addr_id)
             messages.success(request, "Address saved successfully.")
-        else:
-            messages.error(request, "All address fields are required.")
+        elif any([province, city, area, house_number]):
+            messages.error(request, "Please fill out all address fields, or leave all blank to skip.")
             return render(request, "webPages/FrontEnd_ClientView/register-address.html",
                           {"user": _session_user_context(request)})
+        else:
+            # If all are blank, implicitly skip
+            pass
 
         return redirect("myaccount")
 
@@ -517,7 +567,8 @@ def shop(request, current_page=1, category='', subcategory=''):
 
     wishlist_ids = []
     if user_ctx.get("is_authenticated"):
-        wishlist_ids = _get_wishlist(request, user_ctx["userID"])
+        from database.data import get_user_wishlist_item_ids
+        wishlist_ids = get_user_wishlist_item_ids(user_ctx["userID"])
 
     return render(
         request,
@@ -561,17 +612,27 @@ def product_detail(request, product_id):
     if not product:
         return HttpResponse("Product not found.")
 
+    from database.data import get_item_total_stock
+    product_stock = get_item_total_stock(product_id)
+
     if product.get("image"):
         product["image_base64"] = base64.b64encode(product["image"]).decode("utf-8")
     else:
         product["image_base64"] = None
+
+    wishlist_ids = []
+    if user_ctx.get("is_authenticated"):
+        from database.data import get_user_wishlist_item_ids
+        wishlist_ids = get_user_wishlist_item_ids(user_ctx["userID"])
 
     return render(
         request,
         "webPages/FrontEnd_ClientView/product-details.html",
         {
             "product": product,
+            "product_stock": product_stock,
             "user": user_ctx,
+            "wishlist_ids": wishlist_ids,
         },
     )
 
@@ -604,8 +665,12 @@ def _save_cart(request, cart):
 def add_to_cart(request, product_id):
     """
     Add a product to the cart (or increase its quantity).
-    Quantity can optionally be provided via POST or ?qty=.
     """
+    user_ctx = _session_user_context(request)
+    if not user_ctx["is_authenticated"]:
+        messages.info(request, "Please sign in to add items to your cart.")
+        return redirect("login")
+
     cart = _get_cart(request)
 
     qty = 1
@@ -620,8 +685,14 @@ def add_to_cart(request, product_id):
         except ValueError:
             qty = 1
 
-    cart[product_id] = cart.get(product_id, 0) + qty
-    _save_cart(request, cart)
+    from database.data import get_item_total_stock
+    current_stock = get_item_total_stock(product_id)
+    if cart.get(product_id, 0) + qty > current_stock:
+        messages.error(request, f"Sorry, only {current_stock} items left in stock.")
+    else:
+        cart[product_id] = cart.get(product_id, 0) + qty
+        _save_cart(request, cart)
+        messages.success(request, "Item added to cart.")
 
     # redirect back if a "next" parameter is provided
     next_url = request.POST.get("next") or request.GET.get("next")
@@ -635,6 +706,9 @@ def cart_view(request):
     Display and manage the shopping cart.
     """
     user_ctx = _session_user_context(request)
+    if not user_ctx["is_authenticated"]:
+        messages.info(request, "Please sign in to view your cart.")
+        return redirect("login")
 
     cart = _get_cart(request)
 
@@ -650,7 +724,6 @@ def cart_view(request):
                 pass
             return redirect("cart")
 
-        # update all quantities
         if "update_cart" in request.POST:
             new_cart = {}
             for key, value in request.POST.items():
@@ -661,10 +734,25 @@ def cart_view(request):
                     qty = int(value)
                 except (ValueError, IndexError):
                     continue
+                
+                from database.data import get_item_total_stock
+                if qty > get_item_total_stock(item_id):
+                    messages.error(request, f"Cannot update. Stock limited.")
+                    qty = get_item_total_stock(item_id)
+
                 if qty > 0:
                     new_cart[item_id] = qty
             cart = new_cart
             _save_cart(request, cart)
+            return redirect("cart")
+
+        if "apply_coupon" in request.POST:
+            code = request.POST.get("coupon_code", "").strip().upper()
+            if code == "DISCOUNT10":
+                request.session["discount"] = 10
+                messages.success(request, "Coupon DISCOUNT10 applied: 10 PKR off!")
+            else:
+                messages.error(request, "Invalid coupon code.")
             return redirect("cart")
 
     item_ids = list(cart.keys())
@@ -706,12 +794,41 @@ def cart_view(request):
     return render(request, "webPages/FrontEnd_ClientView/cart.html", context)
 
 
+def order_receipt(request, order_id):
+    """
+    Shows a customer-facing receipt for a past order.
+    Validates ownership of the order.
+    """
+    user_ctx = _session_user_context(request)
+    if not user_ctx["is_authenticated"]:
+        return redirect("login")
+        
+    from database.data import get_order_details
+    details = get_order_details(order_id)
+    if not details:
+        messages.error(request, "Order not found.")
+        return redirect("myaccount")
+        
+    if details[0]["user_id"] != user_ctx["userID"]:
+        messages.error(request, "You don't have permission to view this receipt.")
+        return redirect("myaccount")
+        
+    context = {
+        "user": user_ctx,
+        "order": details[0],
+        "items": details
+    }
+    return render(request, "webPages/FrontEnd_ClientView/receipt.html", context)
+
+
 def checkout(request):
     """
     Simple checkout page based on the current cart.
-    Does not persist orders but clears the cart on "place order".
+    Requires an address selection.
     """
     user_ctx = _session_user_context(request)
+    if not user_ctx["is_authenticated"]:
+        return redirect("login")
 
     cart = _get_cart(request)
     item_ids = list(cart.keys())
@@ -737,10 +854,24 @@ def checkout(request):
             }
         )
 
-    grand_total = subtotal
+    discount = request.session.get("discount", 0)
+    grand_total = subtotal - discount
+
+    addresses = get_user_addresses(user_ctx["userID"])
 
     if request.method == "POST" and "place_order" in request.POST:
-        # In a real project you would insert into an Orders table here.
+        address_id = request.POST.get("address_id")
+        if not address_id:
+            messages.error(request, "Please select an address before checking out.")
+            return redirect("checkout")
+
+        from database.data import get_item_total_stock
+        for line in order_lines:
+            current_stock = get_item_total_stock(line["item_id"])
+            if line["quantity"] > current_stock:
+                messages.error(request, f"Sorry, {line['item'].get('itemName', 'Item')} only has {current_stock} items left in stock.")
+                return redirect("checkout")
+
         create_order(user_ctx["userID"], datetime.now(), "Processing", grand_total, order_lines)
         _save_cart(request, {})
         messages.success(request, "Your order has been placed successfully.")
@@ -750,7 +881,9 @@ def checkout(request):
         "user": user_ctx,
         "order_lines": order_lines,
         "subtotal": subtotal,
+        "discount": discount,
         "grand_total": grand_total,
+        "addresses": addresses,
     }
     return render(request, "webPages/FrontEnd_ClientView/checkout.html", context)
 
@@ -772,27 +905,15 @@ def _get_wishlist(request, user_id):
 
 def track_order(request):
     user_ctx = _session_user_context(request)
-    order = None
-    items = []
-    order_id = request.GET.get("order_id") or request.POST.get("order_id")
-    
-    if order_id:
-        try:
-            from database.data import get_order_details
-            details = get_order_details(int(order_id))
-            if details:
-                # Optionally ensure user owns the order if logged in, but tracking ID can be public if long,
-                # Here we just use order_id. If we want it secure we could require user_id match for logged in users.
-                order = details[0]
-                items = details
-        except ValueError:
-            pass
+    if not user_ctx.get("is_authenticated"):
+        return redirect("login")
+
+    from database.data import get_user_orders_with_items
+    orders = get_user_orders_with_items(user_ctx["userID"])
 
     return render(request, "webPages/FrontEnd_ClientView/track.html", {
         "user": user_ctx,
-        "order": order,
-        "items": items,
-        "searched": bool(order_id)
+        "orders": orders,
     })
 
 
@@ -814,11 +935,16 @@ def add_to_wishlist(request, product_id):
 
     user_id = user_ctx["userID"]
     
+    from database.data import get_first_item_quant_id
+    itemQuant_id = get_first_item_quant_id(product_id)
+    if not itemQuant_id:
+        return redirect("wishlist")
+    
     wishlist = _get_wishlist(request, user_id)
-    if product_id not in wishlist:
-        wishlist.append(product_id)
+    if itemQuant_id not in wishlist:
+        wishlist.append(itemQuant_id)
     else:
-        wishlist.remove(product_id)
+        wishlist.remove(itemQuant_id)
         
     _save_wishlist(request, wishlist, user_id)
 
@@ -830,8 +956,11 @@ def add_to_wishlist(request, product_id):
 
 def wishlist_view(request):
     user_ctx = _session_user_context(request)
-    user_id = user_ctx["userID"]
+    if not user_ctx["is_authenticated"]:
+        messages.info(request, "Please sign in to view your wishlist.")
+        return redirect("login")
 
+    user_id = user_ctx["userID"]
     wishlist = _get_wishlist(request, user_id)
 
     if request.method == "POST":

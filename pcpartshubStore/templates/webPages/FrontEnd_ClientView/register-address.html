@@ -177,15 +177,7 @@
       <h1 class="auth-title">Add your address.</h1>
       <p class="auth-subtitle">Tell us where to deliver your orders. You can also skip this for now.</p>
 
-      {% if messages %}
-      <div class="auth-alerts">
-        {% for message in messages %}
-          <div class="alert-item alert-error">
-            <span>{{ message }}</span>
-          </div>
-        {% endfor %}
-      </div>
-      {% endif %}
+      <!-- Django messages handled globally -->
 
       <form action="{% url 'register_address' %}" method="post" class="auth-form">
         {% csrf_token %}
@@ -193,28 +185,28 @@
         <div class="form-grid">
           <div class="field-group">
             <label for="province">Province</label>
-            <input type="text" id="province" name="province" placeholder="e.g. Sindh" required>
+            <input type="text" id="province" name="province" placeholder="e.g. Sindh">
           </div>
 
           <div class="field-group">
             <label for="city">City</label>
-            <input type="text" id="city" name="city" placeholder="e.g. Karachi" required>
+            <input type="text" id="city" name="city" placeholder="e.g. Karachi">
           </div>
 
           <div class="field-group">
             <label for="area">Area / Neighbourhood</label>
-            <input type="text" id="area" name="area" placeholder="e.g. Gulshan-e-Iqbal" required>
+            <input type="text" id="area" name="area" placeholder="e.g. Gulshan-e-Iqbal">
           </div>
 
           <div class="field-group">
             <label for="houseNumber">House / Flat No.</label>
-            <input type="text" id="houseNumber" name="houseNumber" placeholder="e.g. B-42, Block 7" required>
+            <input type="text" id="houseNumber" name="houseNumber" placeholder="e.g. B-42, Block 7">
           </div>
         </div>
 
         <button type="submit" class="btn-save">Save Address</button>
 
-        <button type="submit" name="skip" value="1" class="btn-skip">Skip for now →</button>
+        <button type="submit" formnovalidate name="skip" value="1" class="btn-skip">Skip for now →</button>
       </form>
 
     </div>

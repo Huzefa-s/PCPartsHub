@@ -2,57 +2,60 @@
 {% load static %}
 
 {% block element %}
-    
-       
+
+
 <!-- Page Banner Section Start-->
-<div class="page-banner-section section" style="background-image: url('{% static 'webPages/FrontEnd_ClientView/img/bg/page-banner.jpg' %}')">
+<div class="page-banner-section section"
+    style="background-image: url('{% static 'webPages/FrontEnd_ClientView/img/bg/page-banner.jpg' %}')">
     <div class="container">
         <div class="row">
-            
+
             <!-- Page Title Start -->
             <div class="page-title text-center col">
                 <h1>Product details</h1>
             </div><!-- Page Title End -->
-            
+
         </div>
     </div>
 </div><!-- Page Banner Section End-->
 
-    
+
 <!-- Product Section Start-->
 <div class="product-section section pt-110 pb-90">
     <div class="container">
-        
+
         <!-- Product Wrapper Start-->
         <div class="row">
-            
+
             <!-- Product Image & Thumbnail Start -->
             <div class="col-lg-7 col-12 mb-30">
-                
+
                 <!-- Product Thumbnail -->
                 <div class="single-product-thumbnail product-thumbnail-slider float-left">
-                    <div class="single-thumb"><img src="data:image/jpeg;base64,{{ product.image_base64 }}" alt="{{ product.itemName }}"></div>
+                    <div class="single-thumb"><img src="data:image/jpeg;base64,{{ product.image_base64 }}"
+                            alt="{{ product.itemName }}"></div>
                     <!-- <div class="single-thumb"><img src="img/product-details/thumb-2.jpg" alt=""></div>
                     <div class="single-thumb"><img src="img/product-details/thumb-3.jpg" alt=""></div>
                     <div class="single-thumb"><img src="img/product-details/thumb-4.jpg" alt=""></div> -->
                 </div>
-                
+
                 <!-- Product Image -->
                 <div class="single-product-image product-image-slider fix">
-                    <div class="single-image"><img src="data:image/jpeg;base64,{{ product.image_base64 }}" alt="{{ product.itemName }}"></div>
+                    <div class="single-image"><img src="data:image/jpeg;base64,{{ product.image_base64 }}"
+                            alt="{{ product.itemName }}"></div>
                     <!-- <div class="single-image"><img src="img/product-details/2.jpg" alt=""></div>
                     <div class="single-image"><img src="img/product-details/3.jpg" alt=""></div>
                     <div class="single-image"><img src="img/product-details/4.jpg" alt=""></div> -->
                 </div>
-                
+
             </div><!-- Product Image & Thumbnail End -->
-            
+
             <!-- Product Content Start -->
             <div class="single-product-content col-lg-5 col-12 mb-30">
-                
+
                 <!-- Title -->
                 <h1 class="title">{{ product.itemName }}</h1>
-                
+
                 <!-- Product Rating -->
                 <span class="product-rating">
                     <i class="fa fa-star"></i>
@@ -61,25 +64,38 @@
                     <i class="fa fa-star"></i>
                     <i class="fa fa-star"></i>
                 </span>
-                
-                <!-- Price -->
-                <span class="product-price">${{ product.basePrice }}</span>
-                
+
+                <!-- Price & Stock -->
+                <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 15px;">
+                    <span class="product-price" style="margin-bottom: 0;">PKR {{ product.basePrice }}</span>
+                    {% if product_stock > 0 %}
+                        <span style="font-weight: 600; color: #28a745; font-size: 14px; background: #e6f4ea; padding: 4px 10px; border-radius: 4px;">{{ product_stock }} items in stock</span>
+                    {% else %}
+                        <span style="font-weight: 600; color: #dc3545; font-size: 14px; background: #fce4e4; padding: 4px 10px; border-radius: 4px;">Out of stock</span>
+                    {% endif %}
+                </div>
+
                 <!-- Description -->
                 <div class="description">
                     <p>{{ product.description|default:"No description available for this product." }}</p>
                 </div>
-                
+
                 <!-- Quantity & Cart Button -->
+                {% if product_stock > 0 %}
                 <form action="{% url 'add_to_cart' product.item_id %}" method="post" class="product-quantity-cart fix">
                     {% csrf_token %}
                     <input type="hidden" name="next" value="{{ request.path }}">
                     <div class="product-quantity">
-                        <input type="number" min="1" value="1" name="quantity">
+                        <input type="number" min="1" max="{{ product_stock }}" value="1" name="quantity">
                     </div>
                     <button type="submit" class="add-to-cart">add to cart</button>
                 </form>
-                
+                {% else %}
+                <div class="product-quantity-cart fix mb-20" style="margin-bottom: 25px;">
+                    <button type="button" class="add-to-cart" disabled style="background-color: #ddd; color: #888; border-color: #ddd; cursor: not-allowed; width: 100%;">Currently Unavailable</button>
+                </div>
+                {% endif %}
+
                 <!-- Action Button -->
                 <div class="product-action-button fix">
                     <form action="{% url 'add_to_wishlist' product.item_id %}" method="post" style="display:inline;">
@@ -94,7 +110,7 @@
                         </button>
                     </form>
                 </div>
-                
+
                 <!-- Social Share -->
                 <div class="product-share fix">
                     <h6>Share :</h6>
@@ -103,57 +119,12 @@
                     <a href="#"><i class="fa fa-instagram"></i></a>
                     <a href="#"><i class="fa fa-pinterest-p"></i></a>
                 </div>
-                
-            </div><!-- Product Content End -->
-            
-        </div><!-- Product Wrapper End-->
-        
-        <!-- Product Additional Info Start-->
-        <div class="row">
-            
-            <!-- Nav tabs -->
-            <div class="col-12 mt-30">
-                <ul class="pro-info-tab-list nav">
-                    <li><a class="active" data-toggle="tab" href="#more-info">More info</a></li>
-                    <li><a data-toggle="tab" href="#data-sheet">Data sheet</a></li>
-                    <li><a data-toggle="tab" href="#reviews">Reviews</a></li>
-                </ul>
-            </div>
 
-            <!-- Tab panes -->
-            <div class="tab-content col-12">
-                
-                <div class="pro-info-tab tab-pane active" id="more-info">
-                    <p>Fashion has been creating well-designed collections since 2010. The brand offers feminine designs delivering stylish separates and statement dresses which have since evolved into a full ready-to-wear collection in which every item is a vital part of a woman's wardrobe. The result? Cool, easy, chic looks with youthful elegance and unmistakable signature style. All the beautiful pieces are made in Italy and manufactured with the greatest attention.</p>
-                </div>
-                
-                <div class="pro-info-tab tab-pane" id="data-sheet">
-                    <table class="table table-bordered">
-                        <tbody>
-                            <tr class="odd">
-                                <td>Compositions</td>
-                                <td>Cotton</td>
-                            </tr>
-                            <tr class="even">
-                                <td>Styles</td>
-                                <td>Casual</td>
-                            </tr>
-                            <tr class="odd">
-                                <td>Properties</td>
-                                <td>Short Sleeve</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                
-                <div class="pro-info-tab tab-pane" id="reviews">
-                    <a class="button" href="#">Be the first to write your review!</a>
-                </div>
-                
-            </div>
-            
-        </div><!-- Product Additional Info End-->
-        
+            </div><!-- Product Content End -->
+
+        </div><!-- Product Wrapper End-->
+
+
     </div>
 </div><!-- Product Section End-->
 

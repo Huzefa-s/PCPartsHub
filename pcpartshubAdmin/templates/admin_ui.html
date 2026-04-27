@@ -1008,7 +1008,7 @@
 
   <!-- ─────────── TOP BAR ─────────── -->
   <header class="topbar">
-    <div class="topbar-brand" onclick="window.location.href='/'" style = "cursor: pointer; ">
+    <div class="topbar-brand" onclick="window.location.href='/'" style="cursor: pointer; ">
       <img src="{% static 'assets/img/logo.png' %}" alt="Logo">
       <div class="sep"></div>
       <div>
@@ -1041,7 +1041,7 @@
       <i class="fa fa-shopping-bag"></i> Orders
       <span class="nav-badge" id="sidebar-badge">{{ pending_count }}</span>
     </button>
-    
+
     <button class="nav-link-item" data-tab="products">
       <i class="fa fa-tag"></i> Products
     </button>
@@ -1072,10 +1072,13 @@
       </div>
 
       {% if low_stock_count > 0 %}
-      <div class="alert" style="background: rgba(192, 57, 43, 0.1); border: 1px solid rgba(192, 57, 43, 0.4); padding: 16px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
+      <div class="alert"
+        style="background: rgba(192, 57, 43, 0.1); border: 1px solid rgba(192, 57, 43, 0.4); padding: 16px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;">
         <div>
-            <strong style="color: var(--red); font-size: 16px;"><i class="fa fa-exclamation-triangle"></i> Automated Stock Alert</strong><br>
-            <span style="color: var(--ink-soft);">{{ low_stock_count }} items have fallen below the reorder threshold! Please restock immediately.</span>
+          <strong style="color: var(--red); font-size: 16px;"><i class="fa fa-exclamation-triangle"></i> Automated Stock
+            Alert</strong><br>
+          <span style="color: var(--ink-soft);">{{ low_stock_count }} items have fallen below the reorder threshold!
+            Please restock immediately.</span>
         </div>
         <button class="btn btn-danger btn-sm" onclick="switchTab('inventory')">Review Inventory</button>
       </div>
@@ -1244,7 +1247,7 @@
       </div>
     </div>
 
-    
+
     <!-- ══ PRODUCTS ══ -->
     <div class="tab-panel" id="tab-products">
       <div class="page-header">
@@ -1355,45 +1358,45 @@
               </tr>
             </thead>
             <tbody>
-              
+
               {% for u in users %}
-                {% if u.name != "hello" and u.name != username %}
-                  <tr>
-                    <td>
-                      <div style="display:flex;align-items:center;gap:10px;">
-                        <div class="user-avatar" style="width:32px;height:32px;font-size:13px;background:var(--blue);">
-                          {{ u.name|slice:":1"|upper }}
-                        </div>
-                        {{ u.name }}
-                      </div>
-                    </td>
-                    <td>{{ u.email }}</td>
-                    <td>{{ u.phone|default:"—" }}</td>
-                    <td>
-                      {% if u.role == 'admin' %}
-                      <span class="status-pill" style="background:var(--accent-lt);color:var(--accent);">Admin</span>
-                      {% elif u.role == 'staff' %}
-                      <span class="status-pill" style="background:var(--blue-lt);color:var(--blue);">Staff</span>
-                      {% else %}
-                      <span class="status-pill" style="background:var(--green-lt);color:var(--green);">Customer</span>
-                      {% endif %}
-                    </td>
-                    <td>
-                      <button class="btn btn-ghost btn-sm btn-edit-user" data-user-id="{{ u.user_id }}"
-                        data-user-name="{{ u.name }}" data-user-email="{{ u.email }}" data-user-role="{{ u.role }}"
-                        data-user-phone="{{ u.phone|default:'' }}">
-                        <i class="fa fa-pencil"></i> Edit
-                      </button>
-                      {% if user_role == 'admin' %}
-                        <button class="btn btn-danger btn-sm btn-delete-user" data-id="{{ u.user_id }}"
-                          data-name="{{ u.name }}" data-email="{{ u.email }}" data-role="{{ u.role }}"
-                          data-phone="{{ u.phone|default:'' }}" data-action="{% url 'admin_delete_user' u.user_id %}" >
-                          <i class="fa fa-trash"></i> Delete
-                        </button>
-                      {% endif %}
-                    </td>
-                  </tr>
-                {% endif %}
+              {% if u.name != "hello" and u.name != username %}
+              <tr>
+                <td>
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <div class="user-avatar" style="width:32px;height:32px;font-size:13px;background:var(--blue);">
+                      {{ u.name|slice:":1"|upper }}
+                    </div>
+                    {{ u.name }}
+                  </div>
+                </td>
+                <td>{{ u.email }}</td>
+                <td>{{ u.phone|default:"—" }}</td>
+                <td>
+                  {% if u.role == 'admin' %}
+                  <span class="status-pill" style="background:var(--accent-lt);color:var(--accent);">Admin</span>
+                  {% elif u.role == 'staff' %}
+                  <span class="status-pill" style="background:var(--blue-lt);color:var(--blue);">Staff</span>
+                  {% else %}
+                  <span class="status-pill" style="background:var(--green-lt);color:var(--green);">Customer</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <button class="btn btn-ghost btn-sm btn-edit-user" data-user-id="{{ u.user_id }}"
+                    data-user-name="{{ u.name }}" data-user-email="{{ u.email }}" data-user-role="{{ u.role }}"
+                    data-user-phone="{{ u.phone|default:'' }}">
+                    <i class="fa fa-pencil"></i> Edit
+                  </button>
+                  {% if user_role == 'admin' %}
+                  <button class="btn btn-danger btn-sm btn-delete-user" data-id="{{ u.user_id }}"
+                    data-name="{{ u.name }}" data-email="{{ u.email }}" data-role="{{ u.role }}"
+                    data-phone="{{ u.phone|default:'' }}" data-action="{% url 'admin_delete_user' u.user_id %}">
+                    <i class="fa fa-trash"></i> Delete
+                  </button>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endif %}
               {% endfor %}
               {% if users|length == 1 %}
               <tr class="empty-row">
@@ -1407,7 +1410,7 @@
       </div>
     </div>
 
-    
+
     <!-- ══ REPORTS ══ -->
     <div class="tab-panel" id="tab-reports">
       <div class="page-header">
@@ -1422,7 +1425,8 @@
           <div class="card-title">Monthly Sales Export</div>
         </div>
         <div class="card-body" style="padding: 24px;">
-          <p class="mb-20">Download a full breakdown of the latest sales, orders, and total revenue to analyze performance.</p>
+          <p class="mb-20">Download a full breakdown of the latest sales, orders, and total revenue to analyze
+            performance.</p>
           <a class="btn btn-primary" href="{% url 'admin_export_sales' %}">
             <i class="fa fa-download"></i> Export as CSV
           </a>
@@ -1455,7 +1459,7 @@
               {% for comp in complaints %}
               <tr>
                 <td><strong>#{{ comp.user_id }}</strong></td>
-                <td style="max-width: 300px; white-space: normal;">{{ comp.description }}</td>
+                <td style="max-width: 300px; white-space: normal;">{{ comp.message }}</td>
                 <td>
                   <span class="status-pill status-{{ comp.status|lower }}">{{ comp.status }}</span>
                 </td>
@@ -1464,20 +1468,23 @@
                   <form method="post" action="{% url 'admin_update_complaint' %}" style="display: inline-block;">
                     {% csrf_token %}
                     <input type="hidden" name="complaint_id" value="{{ comp.complaint_id }}">
-                    <select name="status" class="form-control" style="display:inline-block; width:100px; padding: 4px; font-size:12px;">
+                    <select name="status" class="form-control"
+                      style="display:inline-block; width:100px; padding: 4px; font-size:12px;">
                       <option value="Pending" {% if comp.status == 'Pending' %}selected{% endif %}>Pending</option>
                       <option value="Resolved" {% if comp.status == 'Resolved' %}selected{% endif %}>Resolved</option>
                     </select>
                     <button type="submit" class="btn btn-primary btn-sm">Save</button>
                   </form>
-                  <a href="mailto:?subject=Response to your PCPartsHub Feedback&body=Hello," class="btn btn-ghost btn-sm" title="Respond via email">
+                  <a href="mailto:?subject=Response to your PCPartsHub Feedback&body=Hello,"
+                    class="btn btn-ghost btn-sm" title="Respond via email">
                     <i class="fa fa-envelope"></i>
                   </a>
                 </td>
               </tr>
               {% empty %}
               <tr class="empty-row">
-                <td colspan="5"><i class="fa fa-inbox fa-2x" style="display:block;margin:0 auto 8px;opacity:.3;"></i>No complaints found.</td>
+                <td colspan="5"><i class="fa fa-inbox fa-2x" style="display:block;margin:0 auto 8px;opacity:.3;"></i>No
+                  complaints found.</td>
               </tr>
               {% endfor %}
             </tbody>
@@ -1628,15 +1635,17 @@
             </div>
             <div class="form-group">
               <label class="form-label">Confirm Password *</label>
-              <input name="password_confirm" type="password" class="form-control" required placeholder="Re-enter password"
-                id="new-user-pw-confirm">
+              <input name="password_confirm" type="password" class="form-control" required
+                placeholder="Re-enter password" id="new-user-pw-confirm">
             </div>
           </div>
 
           <!-- Staff-only fields (hidden for customer) -->
           <div id="new-user-staff-fields" style="display:none;">
             <div style="height:1px;background:var(--border);margin:4px 0 18px;"></div>
-            <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:14px;">Staff Details</div>
+            <div
+              style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:14px;">
+              Staff Details</div>
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label">Employee ID</label>
@@ -1655,7 +1664,8 @@
           </div>
 
           <!-- Inline password mismatch error -->
-          <div id="pw-mismatch-err" style="display:none;font-size:12.5px;color:var(--red);margin-top:-8px;margin-bottom:12px;">
+          <div id="pw-mismatch-err"
+            style="display:none;font-size:12.5px;color:var(--red);margin-top:-8px;margin-bottom:12px;">
             <i class="fa fa-exclamation-circle"></i> Passwords do not match.
           </div>
 
@@ -2003,7 +2013,7 @@
 
     /* Validate passwords match before submitting */
     document.getElementById('add-user-form').addEventListener('submit', function (e) {
-      var pw  = document.getElementById('new-user-pw').value;
+      var pw = document.getElementById('new-user-pw').value;
       var pw2 = document.getElementById('new-user-pw-confirm').value;
       var err = document.getElementById('pw-mismatch-err');
       if (pw !== pw2) {

@@ -59,7 +59,7 @@
                                                 </td>
                                                 <td><a href="{% url 'product_detail' item.item_id %}" class="cart-pro-title">{{ item.itemName }}</a></td>
                                                 <td><p class="stock in-stock">in stock</p></td>
-                                                <td><p class="cart-pro-price">${{ item.basePrice }}</p></td>
+                                                <td><p class="cart-pro-price">PKR {{ item.basePrice }}</p></td>
                                                 <td>
                                                     <a href="{% url 'add_to_cart' item.item_id %}" class="wl-add-cart-btn">add to cart</a>
                                                 </td>

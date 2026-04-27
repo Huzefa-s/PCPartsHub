@@ -21,25 +21,16 @@
     <div class="container">
         
         <div class="row justify-content-center">
-            <div class="col-md-6 col-12 mb-50">
+            <div class="col-12 mb-50">
                 <div class="track-form-wrapper">
-                    <h3>Track Your Order</h3>
-                    <p>Enter your Order ID to tracking the current status of your purchase.</p>
-                    <form action="{% url 'track_order' %}" method="post">
-                        {% csrf_token %}
-                        <div class="input-group mb-3">
-                            <input type="text" class="form-control" placeholder="Order ID" name="order_id" required>
-                            <div class="input-group-append">
-                                <button class="btn btn-dark" type="submit" style="background-color: #c9a352; border: none;">Track Now</button>
-                            </div>
-                        </div>
-                    </form>
+                    <h3>Your Orders</h3>
+                    <p>Here are your current and past orders.</p>
                 </div>
             </div>
         </div>
 
-        {% if searched %}
-            {% if order %}
+        {% if orders %}
+            {% for order in orders %}
             <div class="row justify-content-center mt-30">
                 <div class="col-md-8 col-12">
                     <div class="card bg-dark text-white border-secondary">
@@ -56,23 +47,23 @@
                             <hr class="border-secondary">
                             <h5>Order Items:</h5>
                             <ul>
-                                {% for item in items %}
-                                    <li>{{ item.quantity }}x {{ item.itemName }}</li>
+                                {% for item in order.items %}
+                                    <li>{{ item.quantity }}x item#{{ item.itemQuant_id }}</li>
                                 {% endfor %}
                             </ul>
                         </div>
                     </div>
                 </div>
             </div>
-            {% else %}
-            <div class="row justify-content-center mt-30">
-                <div class="col-md-8 col-12 text-center">
-                    <div class="alert alert-danger">
-                        Sorry, we couldn't find an order with that ID. Please check and try again.
-                    </div>
+            {% endfor %}
+        {% else %}
+        <div class="row justify-content-center mt-30">
+            <div class="col-md-8 col-12 text-center">
+                <div class="alert alert-info" style="color: black;">
+                    You have no orders to track.
                 </div>
             </div>
-            {% endif %}
+        </div>
         {% endif %}
 
     </div>

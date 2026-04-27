@@ -53,7 +53,9 @@
                                                         {% if line.item.image_base64 %}
                                                             <img src="data:image/jpeg;base64,{{ line.item.image_base64 }}" alt="{{ line.item.itemName }}" />
                                                         {% else %}
-                                                            <img src="{% static 'webPages/FrontEnd_ClientView/img/product/1.jpg' %}" alt="{{ line.item.itemName }}" />
+                                                            <div style="width: 104px; height: 104px; display: flex; align-items: center; justify-content: center; background-color: #f7f7f7; color: #bbb; border: 1px solid #eee;">
+                                                                <span>No Image</span>
+                                                            </div>
                                                         {% endif %}
                                                     </a>
                                                 </td>
@@ -67,8 +69,8 @@
                                                         <input type="number" min="1" name="qty_{{ line.item.item_id }}" value="{{ line.quantity }}">
                                                     </div>
                                                 </td>
-                                                <td><p class="cart-pro-price">${{ line.item.basePrice }}</p></td>
-                                                <td><p class="cart-price-total">${{ line.line_total }}</p></td>
+                                                <td><p class="cart-pro-price">PKR {{ line.item.basePrice }}</p></td>
+                                                <td><p class="cart-price-total">PKR {{ line.line_total }}</p></td>
                                                 <td>
                                                     <button name="remove" value="{{ line.item.item_id }}" class="cart-pro-remove" type="submit">
                                                         <i class="fa fa-trash-o"></i>
@@ -97,17 +99,20 @@
                         <div class="cart-cuppon col-lg-4 col-md-6 col-12 mb-30">
                             <h4 class="title">Discount Code</h4>
                             <p>Enter your coupon code if you have</p>
-                            <form action="#" class="cuppon-form">
-                                <input type="text" placeholder="Cuppon Code">
-                                <button class="button">apply coupon</button>
-                            </form>
+                            <div class="cuppon-form" style="display: flex; gap: 10px;">
+                                <input type="text" name="coupon_code" placeholder="Coupon Code (e.g. DISCOUNT10)">
+                                <button type="submit" name="apply_coupon" class="button">apply coupon</button>
+                            </div>
                         </div>
                         
                         <!-- Cart Checkout Progress -->
                         <div class="cart-checkout-process col-lg-4 col-md-6 col-12 mb-30">
                             <h4 class="title">Process Checkout</h4>
-                            <p><span>Subtotal</span><span>${{ subtotal }}</span></p>
-                            <h5><span>Grand total</span><span>${{ grand_total }}</span></h5>
+                            <p><span>Subtotal</span><span>PKR {{ subtotal }}</span></p>
+                            {% if request.session.discount %}
+                            <p><span>Discount</span><span style="color: green;">- PKR {{ request.session.discount }}</span></p>
+                            {% endif %}
+                            <h5><span>Grand total</span><span>PKR {{ grand_total }}</span></h5>
                             {% if cart_items %}
                                 <a href="{% url 'checkout' %}"><button class="button" type="button">process to checkout</button></a>
                             {% endif %}

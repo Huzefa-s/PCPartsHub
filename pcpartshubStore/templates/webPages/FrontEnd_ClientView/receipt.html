@@ -1,0 +1,67 @@
+{% extends "webPages/FrontEnd_ClientView/siteContainer.html" %}
+{% load static %}
+
+{% block element %}
+    <div class="page-banner-section section" style="background-image: url('{% static 'webPages/FrontEnd_ClientView/img/bg/page-banner.jpg' %}')">
+        <div class="container">
+            <div class="row">
+                <div class="page-title text-center col">
+                    <h1>Order Receipt</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container pb-100 pt-100">
+        <div class="row">
+            <div class="col-8 m-auto">
+                <div class="receipt-box" style="padding: 40px; border: 1px solid #ddd; border-radius: 10px; background-color: #fcfcfc;">
+                    <h3 class="mb-20">Order #{{ order.order_id }}</h3>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                        <div>
+                            <p><strong>Date:</strong> <span style="color: #666;">{{ order.order_date }}</span></p>
+                            <p><strong>Status:</strong> <strong style="color: #4CAF50;">{{ order.order_status }}</strong></p>
+                        </div>
+                        <div style="text-align: right;">
+                            <p><strong>Customer:</strong> {{ order.customer_name }}</p>
+                            <p><strong>Email:</strong> {{ order.customer_email }}</p>
+                        </div>
+                    </div>
+                    
+                    <hr class="mb-30">
+                    <h4 class="mb-20">Items Included</h4>
+                    <table class="table text-center">
+                        <thead style="background-color: #f1f1f1;">
+                            <tr>
+                                <th style="border-bottom: none;">Item Name</th>
+                                <th style="border-bottom: none;">Description</th>
+                                <th style="border-bottom: none;">Quantity</th>
+                                <th style="border-bottom: none;">Line Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in items %}
+                            <tr>
+                                <td>{{ item.itemName }}</td>
+                                <td style="font-size: 13px; color: #777;">{{ item.item_description|default:"-" }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>PKR {{ item.price }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot style="background-color: #f1f1f1;">
+                            <tr>
+                                <td colspan="3" style="text-align: right; font-weight: bold; border-top: 1px solid #ddd;">Total Paid</td>
+                                <td style="font-weight: bold; border-top: 1px solid #ddd; color: #4CAF50;">PKR {{ order.totalPrice }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    <div class="mt-40 text-center">
+                        <button onclick="window.print()" class="button" style="background-color: #555; color: white;">Download PDF</button>
+                        <a href="{% url 'myaccount' %}" class="button">Back to My Account</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

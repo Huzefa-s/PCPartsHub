@@ -28,6 +28,49 @@
     <link rel="stylesheet" href="{% static 'webPages/FrontEnd_ClientView/style.css' %}">
     <!-- Modernizer JS -->
     <script src="{% static 'webPages/FrontEnd_ClientView/js/vendor/modernizr-2.8.3.min.js' %}"></script>
+    <style>
+        .notify-badge {
+            position: absolute;
+            top: 2px;
+            right: 0px;
+            width: 7px;
+            height: 7px;
+            background: #c9a352;
+            border-radius: 50%;
+            border: 1px solid #fff;
+        }
+        .account-menu ul li a {
+            position: relative;
+        }
+        #notificationModal .modal-content {
+            background: #111;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 4px;
+        }
+        #notificationModal .modal-header {
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        #notificationModal .modal-title {
+            color: #c9a352;
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .notif-item {
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 2px;
+            font-size: 13.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-left: 3px solid #666;
+        }
+        .notif-item.error { border-left-color: #f08080; color: #f08080; }
+        .notif-item.success { border-left-color: #80c880; color: #80c880; }
+        .notif-item.info { border-left-color: #80b0c8; color: #80b0c8; }
+    </style>
 </head>
 
 <body>
@@ -68,6 +111,10 @@
                                     <!-- Account Menu -->
                                     <div class="account-menu col-md-4 col-12">
                                         <ul>
+                                            <li><a href="#" data-toggle="modal" data-target="#notificationModal" title="Notifications">
+                                                <i class="fa fa-bell-o"></i>
+                                                {% if messages %}<span class="notify-badge"></span>{% endif %}
+                                            </a></li>
                                             {% if user.is_authenticated %}
                                             <li><a href="#" title="Welcome"><i class="fa fa-user"></i> {{ user.username }}</a></li>
                                             <li><a href="{% url 'myaccount' %}" title="My Account"><i class="fa fa-cog"></i></a></li>
@@ -244,6 +291,35 @@
 
 
     </div><!-- Main Wrapper End -->
+
+    <!-- Notification Modal -->
+    <div class="modal fade" id="notificationModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">NOTIFICATIONS</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: #fff; opacity: 0.5;">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="notif-item {{ message.tags }}">
+                                <i class="fa {% if message.tags == 'error' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %}"></i>
+                                <span>{{ message }}</span>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4" style="color: rgba(255,255,255,0.2);">
+                            <i class="fa fa-bell-slash-o fa-2x mb-2"></i>
+                            <p>No new notifications available.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- JS
 ============================================ -->

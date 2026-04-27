@@ -32,10 +32,11 @@ urlpatterns = [
     path("myaccount/addresses/", views.manage_addresses, name="manage_addresses"),
     path("myaccount/payment/", views.manage_payment_method, name="manage_payment_method"),
     path("update_profile/", views.update_profile, name="update_profile"),
+    path("change_password/", views.change_password, name="change_password"),
     path("complaint/submit/", views.submit_complaint, name="submit_complaint"),
 
-    # ---------- Utility ----------
     path("under-construction/", views.under_construction, name="under_construction"),
+    path("order_receipt/<int:order_id>/", views.order_receipt, name="order_receipt"),
 
    
     path("shop/<int:current_page>/<str:category>/<str:subcategory>/", views.shop, name="shop"),
