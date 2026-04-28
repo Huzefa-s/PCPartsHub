@@ -4,7 +4,7 @@
 {% block element %}
 
 <!-- Page Banner Section Start-->
-<div class="page-banner-section section" style="background-image: url('{% static 'webPages/FrontEnd_ClientView/img/bg/page-banner.jpg' %}')">
+<div class="page-banner-section section" style="background-image: url('{% static 'webPages/FrontEnd_ClientView/img/bg/page-banner.png' %}')">
     <div class="container">
         <div class="row">
             <!-- Page Title Start -->
@@ -113,7 +113,7 @@
                 <!-- Active filter banner -->
                 {% if search_query or category %}
                 <div class="shop-filter-bar">
-                    <span>
+                    <span style = "color: black">
                         {% if search_query %}
                             Showing results for: <strong>{{ search_query }}</strong>
                             {% if category %} in <strong>{{ category }}</strong>{% endif %}
