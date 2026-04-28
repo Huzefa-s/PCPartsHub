@@ -110,8 +110,12 @@
 
                         <!-- Action Button -->
                         <div class="action-button fix">
+                            {% if product.stock > 0 %}
                             <a href="{% url 'add_to_cart' product.item_id %}?qty=1&next={{ request.path }}">add to
                                 cart</a>
+                            {% else %}
+                            <span style="background-color: #ddd; color: #888; border-color: #ddd; cursor: not-allowed; padding: 8px 12px; border-radius: 4px; display: inline-block;">Out of Stock</span>
+                            {% endif %}
                         </div>
 
                     </div>

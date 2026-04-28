@@ -4,11 +4,11 @@ import base64
 from django.contrib.auth.hashers import make_password, check_password
 
 """
-Data-access helpers for the crochetAdmin app.
+Data-access helpers for the PCPartsHubAdmin app.
 
 Aligned with:
 - The database schema defined in `database/schema.txt`
-- The helper patterns used in `crochetStore/database/data.py`
+- The helper patterns used in `PCPartsHub/database/data.py`
 
 Key conventions from `schema.txt`:
 - Table names  : Users, Items, ItemsQuant, Category, SubCategory,
@@ -733,6 +733,11 @@ def update_order_status(order_id, status):
             cursor.execute("SELECT itemQuant_id, quantity FROM OrderItems WHERE order_id = %s", [order_id])
             for q_row in cursor.fetchall():
                 cursor.execute("UPDATE ItemsQuant SET stock = stock + %s WHERE itemQuant_id = %s", [q_row[1], q_row[0]])
+
+        elif status != 'Cancelled' and old_status == 'Cancelled':
+            cursor.execute("SELECT itemQuant_id, quantity FROM OrderItems WHERE order_id = %s", [order_id])
+            for q_row in cursor.fetchall():
+                cursor.execute("UPDATE ItemsQuant SET stock = stock - %s WHERE itemQuant_id = %s", [q_row[1], q_row[0]])
 
         cursor.execute(
             "UPDATE Orders SET order_status = %s WHERE order_id = %s",

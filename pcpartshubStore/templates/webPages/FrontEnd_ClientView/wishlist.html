@@ -3,6 +3,12 @@
 
 {% block element %}
 
+<style>
+.stock.out-of-stock {
+    color: #dc3545;
+}
+</style>
+
     <!-- Page Banner Section Start-->
     <div class="page-banner-section section" style="background-image: url('{% static 'webPages/FrontEnd_ClientView/img/bg/page-banner.jpg' %}')">
         <div class="container">
@@ -58,10 +64,14 @@
                                                     </a>
                                                 </td>
                                                 <td><a href="{% url 'product_detail' item.item_id %}" class="cart-pro-title">{{ item.itemName }}</a></td>
-                                                <td><p class="stock in-stock">in stock</p></td>
+                                                <td><p class="stock {% if item.stock > 0 %}in-stock{% else %}out-of-stock{% endif %}">{% if item.stock > 0 %}in stock{% else %}out of stock{% endif %}</p></td>
                                                 <td><p class="cart-pro-price">PKR {{ item.basePrice }}</p></td>
                                                 <td>
+                                                    {% if item.stock > 0 %}
                                                     <a href="{% url 'add_to_cart' item.item_id %}" class="wl-add-cart-btn">add to cart</a>
+                                                    {% else %}
+                                                    <span style="background-color: #ddd; color: #888; border-color: #ddd; cursor: not-allowed; padding: 8px 12px; border-radius: 4px; display: inline-block;">Out of Stock</span>
+                                                    {% endif %}
                                                 </td>
                                                 <td>
                                                     <button class="cart-pro-remove" type="submit" name="remove" value="{{ item.item_id }}">
