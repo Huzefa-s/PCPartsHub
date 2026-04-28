@@ -1386,3 +1386,60 @@ def get_user_wishlist_item_ids(user_id):
     with connection.cursor() as cursor:
         cursor.execute(sql, [user_id])
         return [row[0] for row in cursor.fetchall()]
+
+
+# ---------------------------------------------------------------------------  
+# Discount Codes
+# ---------------------------------------------------------------------------
+
+def create_discount_code(code, discount_type, value):
+    """
+    Create a new discount code.
+    discount_type: 'percentage' or 'amount'
+    value: the percentage (0-100) or fixed amount
+    Returns the discount_id
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "INSERT INTO DiscountCodes (code, discount_type, value, created_at) VALUES (%s, %s, %s, datetime('now'))",
+            [code, discount_type, value],
+        )
+        connection.commit()
+        return cursor.lastrowid
+
+
+def get_all_discount_codes():
+    """
+    Get all discount codes.
+    Returns list of dicts with discount_id, code, discount_type, value, created_at
+    """
+    sql = """
+        SELECT discount_id, code, discount_type, value, created_at
+        FROM DiscountCodes
+        ORDER BY created_at DESC
+    """
+    return custom_sql_select(sql)
+
+
+def get_discount_code_by_code(code):
+    """
+    Get a discount code by its code.
+    Returns dict or None
+    """
+    sql = """
+        SELECT discount_id, code, discount_type, value, created_at
+        FROM DiscountCodes
+        WHERE code = %s
+    """
+    results = custom_sql_select(sql, [code])
+    return results[0] if results else None
+
+
+def delete_discount_code(discount_id):
+    """
+    Delete a discount code by its id.
+    """
+    with connection.cursor() as cursor:
+        cursor.execute("DELETE FROM DiscountCodes WHERE discount_id = %s", [discount_id])
+        connection.commit()
+        return cursor.rowcount > 0

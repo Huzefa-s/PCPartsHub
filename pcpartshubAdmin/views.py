@@ -163,6 +163,7 @@ def dashboard(request):
         "sales_summary":   admin_data.get_sales_summary(),
         "inventory_value": admin_data.get_inventory_value(),
         "complaints":      admin_data.get_complaints(),
+        "discounts":       admin_data.get_all_discount_codes(),
         "user_role":       user_role,
         "user_id":         user_id,
         "username":        request.session.get("username", ""),
@@ -500,3 +501,64 @@ def get_user_details(request, user_id):
         "order_history": admin_data.get_user_order_history(user_id),
         "order_stats":   admin_data.get_user_order_stats(user_id),
     })
+
+
+@admin_staff_required
+@require_POST
+def admin_add_discount(request):
+    """
+    Add a new discount code.
+    """
+    code = request.POST.get("code", "").strip().upper()
+    discount_type = request.POST.get("discount_type", "")
+    percentage = request.POST.get("percentage", "")
+    amount = request.POST.get("amount", "")
+
+    if not code:
+        messages.error(request, "Discount code is required.")
+        return redirect("admin_dashboard")
+
+    if discount_type not in ["percentage", "amount"]:
+        messages.error(request, "Invalid discount type.")
+        return redirect("admin_dashboard")
+
+    if discount_type == "percentage":
+        try:
+            value = float(percentage)
+            if not (0 < value <= 100):
+                raise ValueError
+        except ValueError:
+            messages.error(request, "Percentage must be between 1 and 100.")
+            return redirect("admin_dashboard")
+    else:
+        try:
+            value = float(amount)
+            if value <= 0:
+                raise ValueError
+        except ValueError:
+            messages.error(request, "Amount must be a positive number.")
+            return redirect("admin_dashboard")
+
+    try:
+        admin_data.create_discount_code(code, discount_type, value)
+        messages.success(request, f"Discount code '{code}' added successfully.")
+    except IntegrityError:
+        messages.error(request, "Discount code already exists.")
+    except Exception as e:
+        messages.error(request, f"Error adding discount code: {str(e)}")
+
+    return redirect("admin_dashboard")
+
+
+@admin_staff_required
+@require_POST
+def admin_delete_discount(request, discount_id):
+    """
+    Delete a discount code.
+    """
+    if admin_data.delete_discount_code(discount_id):
+        messages.success(request, "Discount code deleted.")
+    else:
+        messages.error(request, "Discount code not found.")
+
+    return redirect("admin_dashboard")

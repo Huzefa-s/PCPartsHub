@@ -67,6 +67,18 @@ urlpatterns = [
         name="admin_update_complaint",
     ),
 
+    # ── Discounts ─────────────────────────────────────────────────────────────
+    path(
+        "discounts/add/",
+        views.admin_add_discount,
+        name="admin_add_discount",
+    ),
+    path(
+        "discounts/<int:discount_id>/delete/",
+        views.admin_delete_discount,
+        name="admin_delete_discount",
+    ),
+
     # ── Reports ───────────────────────────────────────────────────────────────
     path(
         "reports/export/sales/",
