@@ -73,4 +73,16 @@ urlpatterns = [
         views.admin_export_sales,
         name="admin_export_sales",
     ),
+    
+    # ── Coupons ───────────────────────────────────────────────────────────────
+    path(
+        "coupons/save/",
+        views.admin_save_coupon,
+        name="admin_save_coupon",
+    ),
+    path(
+        "coupons/<int:coupon_id>/delete/",
+        views.admin_delete_coupon,
+        name="admin_delete_coupon",
+    ),
 ]

@@ -1381,3 +1381,44 @@ def get_user_wishlist_item_ids(user_id):
     with connection.cursor() as cursor:
         cursor.execute(sql, [user_id])
         return [row[0] for row in cursor.fetchall()]
+
+
+# ---------------------------------------------------------------------------
+# Coupons
+# ---------------------------------------------------------------------------
+
+def get_coupon(code):
+    """Fetch an active coupon by code. Returns dict or None."""
+    sql = "SELECT * FROM Coupons WHERE code = %s AND is_active = 1 LIMIT 1"
+    with connection.cursor() as cursor:
+        cursor.execute(sql, [code.strip().upper()])
+        rows = _rows_to_dicts(cursor)
+        return rows[0] if rows else None
+
+def list_coupons():
+    """List all coupons for admin panel."""
+    return custom_sql_select("SELECT * FROM Coupons ORDER BY created_at DESC")
+
+def save_coupon(code, amount, coupon_id=None):
+    """Create or update a coupon."""
+    code = code.strip().upper()
+    with connection.cursor() as cursor:
+        if coupon_id:
+            cursor.execute(
+                "UPDATE Coupons SET code = %s, discount_amount = %s WHERE coupon_id = %s",
+                [code, amount, coupon_id]
+            )
+        else:
+            cursor.execute(
+                "INSERT INTO Coupons (code, discount_amount) VALUES (%s, %s)",
+                [code, amount]
+            )
+        connection.commit()
+        return True
+
+def delete_coupon(coupon_id):
+    """Delete a coupon."""
+    with connection.cursor() as cursor:
+        cursor.execute("DELETE FROM Coupons WHERE coupon_id = %s", [coupon_id])
+        connection.commit()
+        return cursor.rowcount > 0

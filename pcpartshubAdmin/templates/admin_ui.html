@@ -1056,6 +1056,9 @@
     <button class="nav-link-item" data-tab="complaints">
       <i class="fa fa-comments"></i> Complaints
     </button>
+    <button class="nav-link-item" data-tab="coupons">
+      <i class="fa fa-ticket"></i> Coupons
+    </button>
 
   </nav>
 
@@ -1491,6 +1494,61 @@
           </table>
         </div>
       </div>
+    <!-- ══ COUPONS ══ -->
+    <div class="tab-panel" id="tab-coupons">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Coupon Management</div>
+          <div class="page-subtitle">Create and manage discount codes for customers.</div>
+        </div>
+        <button class="btn btn-primary" id="btn-add-coupon">
+          <i class="fa fa-plus"></i> Create Coupon
+        </button>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Discount Amount</th>
+                <th>Status</th>
+                <th>Date Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for cn in coupons %}
+              <tr>
+                <td><strong>{{ cn.code }}</strong></td>
+                <td>Rs.{{ cn.discount_amount }}/-</td>
+                <td>
+                  <span class="status-pill {% if cn.is_active %}status-delivered{% else %}status-cancelled{% endif %}">
+                    {% if cn.is_active %}Active{% else %}Inactive{% endif %}
+                  </span>
+                </td>
+                <td>{{ cn.created_at }}</td>
+                <td>
+                  <div style="display:flex;gap:6px;">
+                    <button class="btn btn-ghost btn-sm btn-edit-coupon" data-id="{{ cn.coupon_id }}" data-code="{{ cn.code }}" data-amount="{{ cn.discount_amount }}">
+                      <i class="fa fa-pencil"></i> Edit
+                    </button>
+                    <button class="btn btn-danger btn-sm btn-delete-coupon" data-id="{{ cn.coupon_id }}" data-code="{{ cn.code }}" data-action="{% url 'admin_delete_coupon' cn.coupon_id %}">
+                      <i class="fa fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr class="empty-row">
+                <td colspan="5"><i class="fa fa-ticket fa-2x" style="display:block;margin:0 auto 8px;opacity:.3;"></i>No coupons found.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
   </main>
@@ -1843,94 +1901,35 @@
   </div>
 
   <!-- ─────────── SETTINGS MODALS ─────────── -->
-  {% if user_role == 'admin' %}
-  {% for modal_id, modal_title, input_id in settings_modals|default:"" %}{% endfor %}
-
-  <!-- Reusable settings modal template for each setting -->
-  {% for cfg in settings_configs %}
-  <div class="modal-wrap" id="{{ cfg.modal_id }}">
-    <div class="modal-box" style="max-width:480px;">
-      <div class="modal-head">
-        <h5>{{ cfg.title }}</h5>
-        <button type="button" class="modal-close" onclick="closeModal('{{ cfg.modal_id }}')">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label class="form-label">Description</label>
-          <textarea class="form-control" id="{{ cfg.input_id }}" rows="4"
-            placeholder="{{ cfg.placeholder }}"></textarea>
-        </div>
-      </div>
-      <div class="modal-foot">
-        <button class="btn btn-ghost" onclick="closeModal('{{ cfg.modal_id }}')">Cancel</button>
-        <button class="btn btn-primary"
-          onclick="saveSetting('{{ cfg.modal_id }}', '{{ cfg.desc_id }}', '{{ cfg.input_id }}')">
-          <i class="fa fa-check"></i> Save
-        </button>
-      </div>
-    </div>
-  </div>
-  {% empty %}
-  <!-- Inline fallback when no settings_configs context variable provided -->
-  <div class="modal-wrap" id="paymentModal">
-    <div class="modal-box" style="max-width:480px;">
-      <div class="modal-head">
-        <h5>Edit Payment Description</h5><button class="modal-close"
-          onclick="closeModal('paymentModal')">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group"><label class="form-label">Description</label><textarea class="form-control"
-            id="paymentInput" rows="4"></textarea></div>
-      </div>
-      <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal('paymentModal')">Cancel</button><button
-          class="btn btn-primary" onclick="saveSetting('paymentModal','paymentDesc','paymentInput')"><i
-            class="fa fa-check"></i> Save</button></div>
-    </div>
-  </div>
-  <div class="modal-wrap" id="shippingModal">
-    <div class="modal-box" style="max-width:480px;">
-      <div class="modal-head">
-        <h5>Edit Shipping Options</h5><button class="modal-close" onclick="closeModal('shippingModal')">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group"><label class="form-label">Description</label><textarea class="form-control"
-            id="shippingInput" rows="4"></textarea></div>
-      </div>
-      <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal('shippingModal')">Cancel</button><button
-          class="btn btn-primary" onclick="saveSetting('shippingModal','shippingDesc','shippingInput')"><i
-            class="fa fa-check"></i> Save</button></div>
-    </div>
-  </div>
-  <div class="modal-wrap" id="taxModal">
-    <div class="modal-box" style="max-width:480px;">
-      <div class="modal-head">
-        <h5>Edit Tax Settings</h5><button class="modal-close" onclick="closeModal('taxModal')">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group"><label class="form-label">Description</label><textarea class="form-control"
-            id="taxInput" rows="4"></textarea></div>
-      </div>
-      <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal('taxModal')">Cancel</button><button
-          class="btn btn-primary" onclick="saveSetting('taxModal','taxDesc','taxInput')"><i class="fa fa-check"></i>
-          Save</button></div>
-    </div>
-  </div>
-  <div class="modal-wrap" id="policyModal">
-    <div class="modal-box" style="max-width:480px;">
-      <div class="modal-head">
-        <h5>Edit Store Policies</h5><button class="modal-close" onclick="closeModal('policyModal')">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group"><label class="form-label">Description</label><textarea class="form-control"
-            id="policyInput" rows="4"></textarea></div>
-      </div>
-      <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal('policyModal')">Cancel</button><button
-          class="btn btn-primary" onclick="saveSetting('policyModal','policyDesc','policyInput')"><i
-            class="fa fa-check"></i> Save</button></div>
-    </div>
-  </div>
-  {% endfor %}
   {% endif %}
+
+  <!-- ─────────── COUPON MODAL ─────────── -->
+  <div class="modal-wrap" id="couponModal">
+    <div class="modal-box" style="max-width:400px;">
+      <form method="post" action="{% url 'admin_save_coupon' %}">
+        {% csrf_token %}
+        <div class="modal-head">
+          <h5 id="coupon-modal-title">Create Coupon</h5>
+          <button type="button" class="modal-close" onclick="closeModal('couponModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="coupon-id" name="coupon_id">
+          <div class="form-group">
+            <label class="form-label">Coupon Code *</label>
+            <input id="coupon-code" name="code" class="form-control" required placeholder="e.g. DISCOUNT20" style="text-transform: uppercase;">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Discount Amount (PKR) *</label>
+            <input id="coupon-amount" name="amount" type="number" step="0.01" min="0" class="form-control" required placeholder="0.00">
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="btn btn-ghost" onclick="closeModal('couponModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fa fa-check"></i> Save Coupon</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- ─────────── SCRIPTS ─────────── -->
   <script src="{% static 'js/vendor/jquery-1.12.0.min.js' %}"></script>
@@ -1953,7 +1952,7 @@
     // Restore tab from URL hash
     (function () {
       var hash = location.hash.replace('#', '');
-      var valid = ['dashboard', 'orders', 'products', 'users', 'reports', 'settings'];
+      var valid = ['dashboard', 'orders', 'products', 'users', 'reports', 'settings', 'coupons', 'complaints'];
       if (hash && valid.indexOf(hash) !== -1) switchTab(hash);
     })();
 
@@ -2137,6 +2136,34 @@
         document.getElementById('delete-user-form').action = this.dataset.action;
         console.log(this.dataset.action);
         openModal('deleteUserModal');
+      });
+    });
+
+    /* ── Coupon Modal ── */
+    document.getElementById('btn-add-coupon') && document.getElementById('btn-add-coupon').addEventListener('click', function () {
+      document.getElementById('coupon-modal-title').textContent = 'Create Coupon';
+      document.getElementById('coupon-id').value = '';
+      document.getElementById('coupon-code').value = '';
+      document.getElementById('coupon-amount').value = '';
+      openModal('couponModal');
+    });
+
+    document.querySelectorAll('.btn-edit-coupon').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var d = this.dataset;
+        document.getElementById('coupon-modal-title').textContent = 'Edit Coupon';
+        document.getElementById('coupon-id').value = d.id;
+        document.getElementById('coupon-code').value = d.code;
+        document.getElementById('coupon-amount').value = d.amount;
+        openModal('couponModal');
+      });
+    });
+
+    document.querySelectorAll('.btn-delete-coupon').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.getElementById('delete-item-name').textContent = 'Coupon ' + this.dataset.code;
+        document.getElementById('delete-form').action = this.dataset.action;
+        openModal('deleteModal');
       });
     });
 

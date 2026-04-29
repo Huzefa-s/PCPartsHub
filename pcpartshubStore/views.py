@@ -28,6 +28,7 @@ from database.data import (
     get_user_wishlist,
     remove_user_wishlist,
     change_user_password,
+    get_coupon,
 )
 
 
@@ -748,11 +749,13 @@ def cart_view(request):
 
         if "apply_coupon" in request.POST:
             code = request.POST.get("coupon_code", "").strip().upper()
-            if code == "DISCOUNT10":
-                request.session["discount"] = 10
-                messages.success(request, "Coupon DISCOUNT10 applied: 10 PKR off!")
+            coupon = get_coupon(code)
+            if coupon:
+                amount = coupon["discount_amount"]
+                request.session["discount"] = amount
+                messages.success(request, f"Coupon {code} applied: {amount} PKR off!")
             else:
-                messages.error(request, "Invalid coupon code.")
+                messages.error(request, "Invalid or expired coupon code.")
             return redirect("cart")
 
     item_ids = list(cart.keys())
