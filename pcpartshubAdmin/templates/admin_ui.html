@@ -1152,12 +1152,12 @@
                     {% csrf_token %}
                     <input type="hidden" name="order_id" value="{{ order.order_id }}">
                     <select name="status">
-                      <option value="Processing" {% if order.order_status=='Processing' %}selected{% endif %}>Processing
+                      <option value="Processing" {% if order.order_status == 'Processing' %}selected{% endif %}>Processing
                       </option>
-                      <option value="Shipped" {% if order.order_status=='Shipped' %}selected{% endif %}>Shipped</option>
-                      <option value="Delivered" {% if order.order_status=='Delivered' %}selected{% endif %}>Delivered
+                      <option value="Shipped" {% if order.order_status == 'Shipped' %}selected{% endif %}>Shipped</option>
+                      <option value="Delivered" {% if order.order_status == 'Delivered' %}selected{% endif %}>Delivered
                       </option>
-                      <option value="Cancelled" {% if order.order_status=='Cancelled' %}selected{% endif %}>Cancelled
+                      <option value="Cancelled" {% if order.order_status == 'Cancelled' %}selected{% endif %}>Cancelled
                       </option>
                     </select>
                     <button type="submit" class="btn btn-primary btn-sm">Save</button>
@@ -1221,13 +1221,13 @@
                       {% csrf_token %}
                       <input type="hidden" name="order_id" value="{{ order.order_id }}">
                       <select name="status">
-                        <option value="Processing" {% if order.order_status=='Processing' %}selected{% endif %}>
+                        <option value="Processing" {% if order.order_status == 'Processing' %}selected{% endif %}>
                           Processing</option>
-                        <option value="Shipped" {% if order.order_status=='Shipped' %}selected{% endif %}>Shipped
+                        <option value="Shipped" {% if order.order_status == 'Shipped' %}selected{% endif %}>Shipped
                         </option>
-                        <option value="Delivered" {% if order.order_status=='Delivered' %}selected{% endif %}>Delivered
+                        <option value="Delivered" {% if order.order_status == 'Delivered' %}selected{% endif %}>Delivered
                         </option>
-                        <option value="Cancelled" {% if order.order_status=='Cancelled' %}selected{% endif %}>Cancelled
+                        <option value="Cancelled" {% if order.order_status == 'Cancelled' %}selected{% endif %}>Cancelled
                         </option>
                       </select>
                       <button type="submit" class="btn btn-primary btn-sm">Save</button>
@@ -1576,8 +1576,8 @@
                     <input type="hidden" name="complaint_id" value="{{ comp.complaint_id }}">
                     <select name="status" class="form-control"
                       style="display:inline-block; width:100px; padding: 4px; font-size:12px;">
-                      <option value="Pending" {% if comp.status=='Pending' %}selected{% endif %}>Pending</option>
-                      <option value="Resolved" {% if comp.status=='Resolved' %}selected{% endif %}>Resolved</option>
+                      <option value="Pending" {% if comp.status == 'Pending' %}selected{% endif %}>Pending</option>
+                      <option value="Resolved" {% if comp.status == 'Resolved' %}selected{% endif %}>Resolved</option>
                     </select>
                     <button type="submit" class="btn btn-primary btn-sm">Save</button>
                   </form>
@@ -2008,7 +2008,7 @@
   </div>
 
   <!-- ─────────── SETTINGS MODALS ─────────── -->
-  {% endif %}
+
 
   <!-- ─────────── COUPON MODAL ─────────── -->
   <div class="modal-wrap" id="couponModal">
