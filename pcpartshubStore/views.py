@@ -28,6 +28,7 @@ from database.data import (
     get_user_wishlist,
     remove_user_wishlist,
     change_user_password,
+    get_discount_code_by_code,
 )
 
 
@@ -754,11 +755,17 @@ def cart_view(request):
 
         if "apply_coupon" in request.POST:
             code = request.POST.get("coupon_code", "").strip().upper()
-            if code == "DISCOUNT10":
-                request.session["discount"] = 10
-                messages.success(request, "Coupon DISCOUNT10 applied: 10 PKR off!")
+            discount_data = get_discount_code_by_code(code)
+            if discount_data:
+                request.session["discount_code"] = code
+                messages.success(request, f"Coupon '{code}' applied successfully!")
             else:
                 messages.error(request, "Invalid coupon code.")
+            return redirect("cart")
+
+        if "remove_coupon" in request.POST:
+            request.session.pop("discount_code", None)
+            messages.info(request, "Coupon removed.")
             return redirect("cart")
 
     item_ids = list(cart.keys())
@@ -790,11 +797,29 @@ def cart_view(request):
             }
         )
 
+    # Calculate discount
+    discount_amount = 0
+    applied_code = request.session.get("discount_code")
+    if applied_code:
+        d_data = get_discount_code_by_code(applied_code)
+        if d_data:
+            if d_data["discount_type"] == "percentage":
+                discount_amount = (subtotal * d_data["value"]) / 100
+            else:
+                discount_amount = d_data["value"]
+        else:
+            # Code no longer exists in DB
+            request.session.pop("discount_code", None)
+
+    grand_total = max(0, subtotal - discount_amount)
+
     context = {
         "user": user_ctx,
         "cart_items": cart_items,
         "subtotal": subtotal,
-        "grand_total": subtotal,  # no shipping/tax logic yet
+        "discount": discount_amount,
+        "grand_total": grand_total,
+        "applied_code": applied_code,
     }
 
     return render(request, "webPages/FrontEnd_ClientView/cart.html", context)
@@ -860,8 +885,20 @@ def checkout(request):
             }
         )
 
-    discount = request.session.get("discount", 0)
-    grand_total = subtotal - discount
+    # Calculate discount
+    discount_amount = 0
+    applied_code = request.session.get("discount_code")
+    if applied_code:
+        d_data = get_discount_code_by_code(applied_code)
+        if d_data:
+            if d_data["discount_type"] == "percentage":
+                discount_amount = (subtotal * d_data["value"]) / 100
+            else:
+                discount_amount = d_data["value"]
+        else:
+            request.session.pop("discount_code", None)
+
+    grand_total = max(0, subtotal - discount_amount)
 
     addresses = get_user_addresses(user_ctx["userID"])
 

@@ -3,7 +3,7 @@ from django.views.decorators.http import require_POST, require_http_methods
 from django.http import JsonResponse, HttpResponse
 from django.contrib import messages
 from functools import wraps
-from django.db import connection
+from django.db import connection, IntegrityError
 
 from database import data as admin_data
 
@@ -539,11 +539,15 @@ def admin_add_discount(request):
             messages.error(request, "Amount must be a positive number.")
             return redirect("admin_dashboard")
 
+    # Check for existing code manually to be safe
+    existing = admin_data.get_discount_code_by_code(code)
+    if existing:
+        messages.error(request, f"Discount code '{code}' already exists.")
+        return redirect("/admin#discounts")
+
     try:
         admin_data.create_discount_code(code, discount_type, value)
         messages.success(request, f"Discount code '{code}' added successfully.")
-    except IntegrityError:
-        messages.error(request, "Discount code already exists.")
     except Exception as e:
         messages.error(request, f"Error adding discount code: {str(e)}")
 

@@ -4,7 +4,7 @@
 {% block element %}
 
     <!-- Page Banner Section Start-->
-    <div class="page-banner-section section" style="background-image: url('{% static 'webPages/FrontEnd_ClientView/img/bg/page-banner.png' %}')">
+    <div class="page-banner-section section" style='background-image: url("{% static "webPages/FrontEnd_ClientView/img/bg/page-banner.png" %}")'>
         <div class="container">
             <div class="row">
                 
@@ -99,9 +99,18 @@
                         <div class="cart-cuppon col-lg-4 col-md-6 col-12 mb-30">
                             <h4 class="title">Discount Code</h4>
                             <p>Enter your coupon code if you have</p>
-                            <div class="cuppon-form" style="display: flex; gap: 10px;">
-                                <input type="text" name="coupon_code" placeholder="Coupon Code (e.g. DISCOUNT10)">
-                                <button type="submit" name="apply_coupon" class="button">apply coupon</button>
+                            <div class="cuppon-form" style="display: flex; flex-direction: column; gap: 10px;">
+                                <div style="display: flex; gap: 10px;">
+                                    <input type="text" name="coupon_code" placeholder="Coupon Code (e.g. DISCOUNT10)" {% if applied_code %}value="{{ applied_code }}" disabled{% endif %}>
+                                    {% if not applied_code %}
+                                        <button type="submit" name="apply_coupon" class="button">apply</button>
+                                    {% else %}
+                                        <button type="submit" name="remove_coupon" class="button" style="background-color: #c0392b;">remove</button>
+                                    {% endif %}
+                                </div>
+                                {% if applied_code %}
+                                    <p style="color: #2a7a4f; font-weight: 500;"><i class="fa fa-check-circle"></i> Coupon <strong>{{ applied_code }}</strong> is active!</p>
+                                {% endif %}
                             </div>
                         </div>
                         
@@ -109,8 +118,8 @@
                         <div class="cart-checkout-process col-lg-4 col-md-6 col-12 mb-30">
                             <h4 class="title">Process Checkout</h4>
                             <p><span>Subtotal</span><span>PKR {{ subtotal }}</span></p>
-                            {% if request.session.discount %}
-                            <p><span>Discount</span><span style="color: green;">- PKR {{ request.session.discount }}</span></p>
+                            {% if discount > 0 %}
+                            <p><span>Discount {% if applied_code %}({{ applied_code }}){% endif %}</span><span style="color: #2a7a4f; font-weight: 600;">- PKR {{ discount }}</span></p>
                             {% endif %}
                             <h5><span>Grand total</span><span>PKR {{ grand_total }}</span></h5>
                             {% if cart_items %}
