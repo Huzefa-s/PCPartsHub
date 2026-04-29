@@ -4,11 +4,11 @@ import base64
 from django.contrib.auth.hashers import make_password, check_password
 
 """
-Data-access helpers for the crochetAdmin app.
+Data-access helpers for the PCPartsHubAdmin app.
 
 Aligned with:
 - The database schema defined in `database/schema.txt`
-- The helper patterns used in `crochetStore/database/data.py`
+- The helper patterns used in `PCPartsHub/database/data.py`
 
 Key conventions from `schema.txt`:
 - Table names  : Users, Items, ItemsQuant, Category, SubCategory,
@@ -734,6 +734,11 @@ def update_order_status(order_id, status):
             for q_row in cursor.fetchall():
                 cursor.execute("UPDATE ItemsQuant SET stock = stock + %s WHERE itemQuant_id = %s", [q_row[1], q_row[0]])
 
+        elif status != 'Cancelled' and old_status == 'Cancelled':
+            cursor.execute("SELECT itemQuant_id, quantity FROM OrderItems WHERE order_id = %s", [order_id])
+            for q_row in cursor.fetchall():
+                cursor.execute("UPDATE ItemsQuant SET stock = stock - %s WHERE itemQuant_id = %s", [q_row[1], q_row[0]])
+
         cursor.execute(
             "UPDATE Orders SET order_status = %s WHERE order_id = %s",
             [status, order_id],
@@ -1383,6 +1388,63 @@ def get_user_wishlist_item_ids(user_id):
         return [row[0] for row in cursor.fetchall()]
 
 
+# ---------------------------------------------------------------------------  
+# Discount Codes
+# ---------------------------------------------------------------------------
+
+def create_discount_code(code, discount_type, value):
+    """
+    Create a new discount code.
+    discount_type: 'percentage' or 'amount'
+    value: the percentage (0-100) or fixed amount
+    Returns the discount_id
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "INSERT INTO DiscountCodes (code, discount_type, value, created_at) VALUES (%s, %s, %s, datetime('now'))",
+            [code, discount_type, value],
+        )
+        connection.commit()
+        return cursor.lastrowid
+
+
+def get_all_discount_codes():
+    """
+    Get all discount codes.
+    Returns list of dicts with discount_id, code, discount_type, value, created_at
+    """
+    sql = """
+        SELECT discount_id, code, discount_type, value, created_at
+        FROM DiscountCodes
+        ORDER BY created_at DESC
+    """
+    return custom_sql_select(sql)
+
+
+def get_discount_code_by_code(code):
+    """
+    Get a discount code by its code.
+    Returns dict or None
+    """
+    sql = """
+        SELECT discount_id, code, discount_type, value, created_at
+        FROM DiscountCodes
+        WHERE code = %s
+    """
+    results = custom_sql_select(sql, [code])
+    return results[0] if results else None
+
+
+def delete_discount_code(discount_id):
+    """
+    Delete a discount code by its id.
+    """
+    with connection.cursor() as cursor:
+        cursor.execute("DELETE FROM DiscountCodes WHERE discount_id = %s", [discount_id])
+        connection.commit()
+        return cursor.rowcount > 0
+
+
 # ---------------------------------------------------------------------------
 # Coupons
 # ---------------------------------------------------------------------------
@@ -1421,4 +1483,4 @@ def delete_coupon(coupon_id):
     with connection.cursor() as cursor:
         cursor.execute("DELETE FROM Coupons WHERE coupon_id = %s", [coupon_id])
         connection.commit()
-        return cursor.rowcount > 0
+        return cursor.rowcount > 0

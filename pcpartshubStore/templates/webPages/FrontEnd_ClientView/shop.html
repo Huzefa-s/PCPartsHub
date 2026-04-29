@@ -4,7 +4,7 @@
 {% block element %}
 
 <!-- Page Banner Section Start-->
-<div class="page-banner-section section" style="background-image: url('{% static 'webPages/FrontEnd_ClientView/img/bg/page-banner.jpg' %}')">
+<div class="page-banner-section section" style="background-image: url('{% static 'webPages/FrontEnd_ClientView/img/bg/page-banner.png' %}')">
     <div class="container">
         <div class="row">
             <!-- Page Title Start -->
@@ -113,7 +113,7 @@
                 <!-- Active filter banner -->
                 {% if search_query or category %}
                 <div class="shop-filter-bar">
-                    <span>
+                    <span style = "color: black">
                         {% if search_query %}
                             Showing results for: <strong>{{ search_query }}</strong>
                             {% if category %} in <strong>{{ category }}</strong>{% endif %}
@@ -164,7 +164,11 @@
                                     </div>
                                 </div>
                                 <div class="action-button fix">
+                                    {% if product.stock > 0 %}
                                     <a href="{% url 'add_to_cart' product.item_id %}?qty=1&next={{ request.path }}{% if search_query %}%3Fq={{ search_query }}{% endif %}">add to cart</a>
+                                    {% else %}
+                                    <span style="font-weight: 600; background-color: #fce4e4; color: #dc3545; border-color: #ddd; cursor: not-allowed; padding: 8px 12px; border-radius: 4px; display: inline-block;">Out of Stock</span>
+                                    {% endif %}
                                 </div>
                             </div>
 

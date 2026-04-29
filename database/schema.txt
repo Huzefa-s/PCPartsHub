@@ -12,6 +12,7 @@ Wishlist( wishlist_id, user_id, itemQuant_id)
 Complaint( complaint_id, user_id, description, status, created_at)
 Address( addr_id, province, city, area, houseNumber)
 UserAddress( user_id, addr_id)
+DiscountCodes( discount_id, code, discount_type, value, created_at)
 
 
 RELATIONS AND CARDINALITY:

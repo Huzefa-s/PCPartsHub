@@ -163,6 +163,7 @@ def dashboard(request):
         "sales_summary":   admin_data.get_sales_summary(),
         "inventory_value": admin_data.get_inventory_value(),
         "complaints":      admin_data.get_complaints(),
+        "discounts":       admin_data.get_all_discount_codes(),
         "coupons":         admin_data.list_coupons(),
         "user_role":       user_role,
         "user_id":         user_id,
@@ -501,33 +502,3 @@ def get_user_details(request, user_id):
         "order_history": admin_data.get_user_order_history(user_id),
         "order_stats":   admin_data.get_user_order_stats(user_id),
     })
-
-@admin_staff_required
-@require_POST
-def admin_save_coupon(request):
-    """Create or update a discount coupon."""
-    coupon_id = request.POST.get("coupon_id")
-    code      = request.POST.get("code", "").strip()
-    amount    = request.POST.get("amount")
-
-    if not code or not amount:
-        messages.error(request, "Coupon code and amount are required.")
-        return redirect("admin_dashboard")
-
-    try:
-        amount_val = float(amount)
-    except ValueError:
-        messages.error(request, "Invalid amount.")
-        return redirect("admin_dashboard")
-
-    admin_data.save_coupon(code, amount_val, coupon_id=coupon_id)
-    messages.success(request, f'Coupon "{code}" saved.')
-    return redirect("admin_dashboard")
-
-@admin_staff_required
-@require_POST
-def admin_delete_coupon(request, coupon_id):
-    """Delete a coupon."""
-    admin_data.delete_coupon(coupon_id)
-    messages.success(request, "Coupon deleted.")
-    return redirect("admin_dashboard")

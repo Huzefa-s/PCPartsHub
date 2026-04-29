@@ -152,6 +152,17 @@ CREATE TABLE UserAddress (
 );
 
 -- =========================
+-- DISCOUNT CODES
+-- =========================
+CREATE TABLE DiscountCodes (
+    discount_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    code TEXT UNIQUE NOT NULL,
+    discount_type TEXT NOT NULL CHECK (discount_type IN ('percentage', 'amount')),
+    value REAL NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =========================
 -- INSERT ADMIN USER
 -- =========================
 INSERT INTO Users (

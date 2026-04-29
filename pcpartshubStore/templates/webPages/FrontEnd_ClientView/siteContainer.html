@@ -116,7 +116,7 @@
                                                 {% if messages %}<span class="notify-badge"></span>{% endif %}
                                             </a></li>
                                             {% if user.is_authenticated %}
-                                            <li><a href="#" title="Welcome"><i class="fa fa-user"></i> {{ user.username }}</a></li>
+                                            <li><span href="#" title="Welcome"><i class="fa fa-user"></i> {{ user.username }}</span></li>
                                             <li><a href="{% url 'myaccount' %}" title="My Account"><i class="fa fa-cog"></i></a></li>
                                             <li><a href="{% url 'wishlist' %}" title="Wishlist"><i class="fa fa-heart-o"></i></a></li>
                                             <li><a href="{% url 'cart' %}" title="Cart"><i class="fa fa-shopping-cart"></i></a></li>

@@ -120,6 +120,9 @@ def index(request):
             item["image_base64"] = base64.b64encode(item["image"]).decode("utf-8")
         else:
             item["image_base64"] = None
+        # Add stock information
+        from database.data import get_item_total_stock
+        item["stock"] = get_item_total_stock(item["item_id"])
 
     wishlist_ids = []
     if user_ctx.get("is_authenticated"):
@@ -555,6 +558,9 @@ def shop(request, current_page=1, category='', subcategory=''):
             item["image_base64"] = base64.b64encode(item["image"]).decode("utf-8")
         else:
             item["image_base64"] = None
+        # Add stock information
+        from database.data import get_item_total_stock
+        item["stock"] = get_item_total_stock(item["item_id"])
 
     total_pages = max(1, math.ceil(len(result) / limit_on_single_page))
     pages = [i + 1 for i in range(total_pages)]
@@ -990,6 +996,10 @@ def wishlist_view(request):
             item["image_base64"] = base64.b64encode(item["image"]).decode("utf-8")
         else:
             item["image_base64"] = None
+
+        # Add stock information
+        from database.data import get_item_total_stock
+        item["stock"] = get_item_total_stock(item["item_id"])
 
         wishlist_items.append(item)
 

@@ -1048,13 +1048,16 @@
     <button class="nav-link-item" data-tab="users">
       <i class="fa fa-users"></i> Users
     </button>
+    <button class="nav-link-item" data-tab="discounts">
+      <i class="fa fa-percent"></i> Discounts
+    </button>
 
     <div class="nav-section-label" style="margin-top:12px;">Analytics & Feedback</div>
     <button class="nav-link-item" data-tab="reports">
       <i class="fa fa-line-chart"></i> Reports
     </button>
     <button class="nav-link-item" data-tab="complaints">
-      <i class="fa fa-comments"></i> Complaints
+      <i class="fa fa-comments"></i> Complaints / Feedback
     </button>
     <button class="nav-link-item" data-tab="coupons">
       <i class="fa fa-ticket"></i> Coupons
@@ -1149,12 +1152,12 @@
                     {% csrf_token %}
                     <input type="hidden" name="order_id" value="{{ order.order_id }}">
                     <select name="status">
-                      <option value="Processing" {% if order.order_status == 'Processing' %}selected{% endif %}>Processing
+                      <option value="Processing" {% if order.order_status=='Processing' %}selected{% endif %}>Processing
                       </option>
-                      <option value="Shipped" {% if order.order_status == 'Shipped' %}selected{% endif %}>Shipped</option>
-                      <option value="Delivered" {% if order.order_status == 'Delivered' %}selected{% endif %}>Delivered
+                      <option value="Shipped" {% if order.order_status=='Shipped' %}selected{% endif %}>Shipped</option>
+                      <option value="Delivered" {% if order.order_status=='Delivered' %}selected{% endif %}>Delivered
                       </option>
-                      <option value="Cancelled" {% if order.order_status == 'Cancelled' %}selected{% endif %}>Cancelled
+                      <option value="Cancelled" {% if order.order_status=='Cancelled' %}selected{% endif %}>Cancelled
                       </option>
                     </select>
                     <button type="submit" class="btn btn-primary btn-sm">Save</button>
@@ -1218,13 +1221,13 @@
                       {% csrf_token %}
                       <input type="hidden" name="order_id" value="{{ order.order_id }}">
                       <select name="status">
-                        <option value="Processing" {% if order.order_status == 'Processing' %}selected{% endif %}>
+                        <option value="Processing" {% if order.order_status=='Processing' %}selected{% endif %}>
                           Processing</option>
-                        <option value="Shipped" {% if order.order_status == 'Shipped' %}selected{% endif %}>Shipped
+                        <option value="Shipped" {% if order.order_status=='Shipped' %}selected{% endif %}>Shipped
                         </option>
-                        <option value="Delivered" {% if order.order_status == 'Delivered' %}selected{% endif %}>Delivered
+                        <option value="Delivered" {% if order.order_status=='Delivered' %}selected{% endif %}>Delivered
                         </option>
-                        <option value="Cancelled" {% if order.order_status == 'Cancelled' %}selected{% endif %}>Cancelled
+                        <option value="Cancelled" {% if order.order_status=='Cancelled' %}selected{% endif %}>Cancelled
                         </option>
                       </select>
                       <button type="submit" class="btn btn-primary btn-sm">Save</button>
@@ -1414,6 +1417,106 @@
     </div>
 
 
+    <!-- ══ DISCOUNTS ══ -->
+    <div class="tab-panel" id="tab-discounts">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Discount Codes</div>
+          <div class="page-subtitle">Create and manage discount codes for customers.</div>
+        </div>
+      </div>
+
+      <div class="content-grid">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Add New Discount Code</div>
+          </div>
+          <div class="card-body">
+            <form id="discount-form" method="post" action="{% url 'admin_add_discount' %}">
+              {% csrf_token %}
+              <div class="form-group">
+                <label for="discount_code">Discount Code</label>
+                <input type="text" id="discount_code" name="code" placeholder="e.g. DIS20" required>
+              </div>
+              <div class="form-group">
+                <label>Discount Type</label>
+                <div class="radio-group">
+                  <label class="radio-label">
+                    <input type="radio" name="discount_type" value="percentage" checked>
+                    Percentage of Total Bill
+                  </label>
+                  <label class="radio-label">
+                    <input type="radio" name="discount_type" value="amount">
+                    Fixed Amount Reduction
+                  </label>
+                </div>
+              </div>
+              <div class="form-group" id="percentage-group">
+                <label for="discount_percentage">Percentage (%)</label>
+                <input type="number" id="discount_percentage" name="percentage" min="1" max="100" placeholder="e.g. 20"
+                  required>
+              </div>
+              <div class="form-group" id="amount-group" style="display: none;">
+                <label for="discount_amount">Amount (PKR)</label>
+                <input type="number" id="discount_amount" name="amount" min="1" placeholder="e.g. 500" required>
+              </div>
+              <button type="submit" class="btn btn-primary">Add Discount Code</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Existing Discount Codes</div>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Code</th>
+                    <th>Type</th>
+                    <th>Value</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="discounts-table-body">
+                  {% for discount in discounts %}
+                  <tr>
+                    <td>{{ discount.code }}</td>
+                    <td>{{ discount.discount_type|title }}</td>
+                    <td>
+                      {% if discount.discount_type == 'percentage' %}
+                      {{ discount.value }}%
+                      {% else %}
+                      Rs. {{ discount.value }}
+                      {% endif %}
+                    </td>
+                    <td>{{ discount.created_at|date:"M j, Y" }}</td>
+                    <td>
+                      <form method="post" action="{% url 'admin_delete_discount' discount.discount_id %}"
+                        style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-danger"
+                          onclick="return confirm('Delete this discount code?')">Delete</button>
+                      </form>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr class="empty-row">
+                    <td colspan="5">No discount codes yet.</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
     <!-- ══ REPORTS ══ -->
     <div class="tab-panel" id="tab-reports">
       <div class="page-header">
@@ -1473,8 +1576,8 @@
                     <input type="hidden" name="complaint_id" value="{{ comp.complaint_id }}">
                     <select name="status" class="form-control"
                       style="display:inline-block; width:100px; padding: 4px; font-size:12px;">
-                      <option value="Pending" {% if comp.status == 'Pending' %}selected{% endif %}>Pending</option>
-                      <option value="Resolved" {% if comp.status == 'Resolved' %}selected{% endif %}>Resolved</option>
+                      <option value="Pending" {% if comp.status=='Pending' %}selected{% endif %}>Pending</option>
+                      <option value="Resolved" {% if comp.status=='Resolved' %}selected{% endif %}>Resolved</option>
                     </select>
                     <button type="submit" class="btn btn-primary btn-sm">Save</button>
                   </form>
@@ -1494,62 +1597,66 @@
           </table>
         </div>
       </div>
-    <!-- ══ COUPONS ══ -->
-    <div class="tab-panel" id="tab-coupons">
-      <div class="page-header">
-        <div>
-          <div class="page-title">Coupon Management</div>
-          <div class="page-subtitle">Create and manage discount codes for customers.</div>
+      <!-- ══ COUPONS ══ -->
+      <div class="tab-panel" id="tab-coupons">
+        <div class="page-header">
+          <div>
+            <div class="page-title">Coupon Management</div>
+            <div class="page-subtitle">Create and manage discount codes for customers.</div>
+          </div>
+          <button class="btn btn-primary" id="btn-add-coupon">
+            <i class="fa fa-plus"></i> Create Coupon
+          </button>
         </div>
-        <button class="btn btn-primary" id="btn-add-coupon">
-          <i class="fa fa-plus"></i> Create Coupon
-        </button>
-      </div>
 
-      <div class="card">
-        <div class="card-body">
-          <table class="admin-table">
-            <thead>
-              <tr>
-                <th>Code</th>
-                <th>Discount Amount</th>
-                <th>Status</th>
-                <th>Date Created</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for cn in coupons %}
-              <tr>
-                <td><strong>{{ cn.code }}</strong></td>
-                <td>Rs.{{ cn.discount_amount }}/-</td>
-                <td>
-                  <span class="status-pill {% if cn.is_active %}status-delivered{% else %}status-cancelled{% endif %}">
-                    {% if cn.is_active %}Active{% else %}Inactive{% endif %}
-                  </span>
-                </td>
-                <td>{{ cn.created_at }}</td>
-                <td>
-                  <div style="display:flex;gap:6px;">
-                    <button class="btn btn-ghost btn-sm btn-edit-coupon" data-id="{{ cn.coupon_id }}" data-code="{{ cn.code }}" data-amount="{{ cn.discount_amount }}">
-                      <i class="fa fa-pencil"></i> Edit
-                    </button>
-                    <button class="btn btn-danger btn-sm btn-delete-coupon" data-id="{{ cn.coupon_id }}" data-code="{{ cn.code }}" data-action="{% url 'admin_delete_coupon' cn.coupon_id %}">
-                      <i class="fa fa-trash"></i>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-              {% empty %}
-              <tr class="empty-row">
-                <td colspan="5"><i class="fa fa-ticket fa-2x" style="display:block;margin:0 auto 8px;opacity:.3;"></i>No coupons found.</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+        <div class="card">
+          <div class="card-body">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Discount Amount</th>
+                  <th>Status</th>
+                  <th>Date Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for cn in coupons %}
+                <tr>
+                  <td><strong>{{ cn.code }}</strong></td>
+                  <td>Rs.{{ cn.discount_amount }}/-</td>
+                  <td>
+                    <span
+                      class="status-pill {% if cn.is_active %}status-delivered{% else %}status-cancelled{% endif %}">
+                      {% if cn.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                  </td>
+                  <td>{{ cn.created_at }}</td>
+                  <td>
+                    <div style="display:flex;gap:6px;">
+                      <button class="btn btn-ghost btn-sm btn-edit-coupon" data-id="{{ cn.coupon_id }}"
+                        data-code="{{ cn.code }}" data-amount="{{ cn.discount_amount }}">
+                        <i class="fa fa-pencil"></i> Edit
+                      </button>
+                      <button class="btn btn-danger btn-sm btn-delete-coupon" data-id="{{ cn.coupon_id }}"
+                        data-code="{{ cn.code }}" data-action="{% url 'admin_delete_coupon' cn.coupon_id %}">
+                        <i class="fa fa-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr class="empty-row">
+                  <td colspan="5"><i class="fa fa-ticket fa-2x"
+                      style="display:block;margin:0 auto 8px;opacity:.3;"></i>No coupons found.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
 
   </main>
 
@@ -1916,11 +2023,13 @@
           <input type="hidden" id="coupon-id" name="coupon_id">
           <div class="form-group">
             <label class="form-label">Coupon Code *</label>
-            <input id="coupon-code" name="code" class="form-control" required placeholder="e.g. DISCOUNT20" style="text-transform: uppercase;">
+            <input id="coupon-code" name="code" class="form-control" required placeholder="e.g. DISCOUNT20"
+              style="text-transform: uppercase;">
           </div>
           <div class="form-group">
             <label class="form-label">Discount Amount (PKR) *</label>
-            <input id="coupon-amount" name="amount" type="number" step="0.01" min="0" class="form-control" required placeholder="0.00">
+            <input id="coupon-amount" name="amount" type="number" step="0.01" min="0" class="form-control" required
+              placeholder="0.00">
           </div>
         </div>
         <div class="modal-foot">
@@ -1952,7 +2061,7 @@
     // Restore tab from URL hash
     (function () {
       var hash = location.hash.replace('#', '');
-      var valid = ['dashboard', 'orders', 'products', 'users', 'reports', 'settings', 'coupons', 'complaints'];
+      var valid = ['dashboard', 'orders', 'products', 'users', 'discounts', 'reports', 'settings'];
       if (hash && valid.indexOf(hash) !== -1) switchTab(hash);
     })();
 
@@ -2258,6 +2367,25 @@
     }
     liveSearch('order-search', 'orders-table');
     liveSearch('user-search', 'users-table');
+
+    /* ── Discount Form ── */
+    document.querySelectorAll('input[name="discount_type"]').forEach(function (radio) {
+      radio.addEventListener('change', function () {
+        var percentageGroup = document.getElementById('percentage-group');
+        var amountGroup = document.getElementById('amount-group');
+        if (this.value === 'percentage') {
+          percentageGroup.style.display = 'block';
+          amountGroup.style.display = 'none';
+          document.getElementById('discount_percentage').required = true;
+          document.getElementById('discount_amount').required = false;
+        } else {
+          percentageGroup.style.display = 'none';
+          amountGroup.style.display = 'block';
+          document.getElementById('discount_percentage').required = false;
+          document.getElementById('discount_amount').required = true;
+        }
+      });
+    });
   </script>
 </body>
 
