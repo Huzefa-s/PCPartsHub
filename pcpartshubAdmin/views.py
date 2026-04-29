@@ -502,3 +502,94 @@ def get_user_details(request, user_id):
         "order_history": admin_data.get_user_order_history(user_id),
         "order_stats":   admin_data.get_user_order_stats(user_id),
     })
+
+
+@admin_staff_required
+@require_POST
+def admin_add_discount(request):
+    """
+    Add a new discount code.
+    """
+    code = request.POST.get("code", "").strip().upper()
+    discount_type = request.POST.get("discount_type", "")
+    percentage = request.POST.get("percentage", "")
+    amount = request.POST.get("amount", "")
+
+    if not code:
+        messages.error(request, "Discount code is required.")
+        return redirect("admin_dashboard")
+
+    if discount_type not in ["percentage", "amount"]:
+        messages.error(request, "Invalid discount type.")
+        return redirect("admin_dashboard")
+
+    if discount_type == "percentage":
+        try:
+            value = float(percentage)
+            if not (0 < value <= 100):
+                raise ValueError
+        except ValueError:
+            messages.error(request, "Percentage must be between 1 and 100.")
+            return redirect("admin_dashboard")
+    else:
+        try:
+            value = float(amount)
+            if value <= 0:
+                raise ValueError
+        except ValueError:
+            messages.error(request, "Amount must be a positive number.")
+            return redirect("admin_dashboard")
+
+    try:
+        admin_data.create_discount_code(code, discount_type, value)
+        messages.success(request, f"Discount code '{code}' added successfully.")
+    except IntegrityError:
+        messages.error(request, "Discount code already exists.")
+    except Exception as e:
+        messages.error(request, f"Error adding discount code: {str(e)}")
+
+    return redirect("admin_dashboard")
+
+
+@admin_staff_required
+@require_POST
+def admin_delete_discount(request, discount_id):
+    """
+    Delete a discount code.
+    """
+    if admin_data.delete_discount_code(discount_id):
+        messages.success(request, "Discount code deleted.")
+    else:
+        messages.error(request, "Discount code not found.")
+
+    return redirect("admin_dashboard")
+
+@admin_staff_required
+@require_POST
+def admin_save_coupon(request):
+    """Create or update a discount coupon."""
+    coupon_id = request.POST.get("coupon_id")
+    code      = request.POST.get("code", "").strip()
+    amount    = request.POST.get("amount")
+
+    if not code or not amount:
+        messages.error(request, "Coupon code and amount are required.")
+        return redirect("admin_dashboard")
+
+    try:
+        amount_val = float(amount)
+    except ValueError:
+        messages.error(request, "Invalid amount.")
+        return redirect("admin_dashboard")
+
+    admin_data.save_coupon(code, amount_val, coupon_id=coupon_id)
+    messages.success(request, f'Coupon "{code}" saved.')
+    return redirect("admin_dashboard")
+
+@admin_staff_required
+@require_POST
+def admin_delete_coupon(request, coupon_id):
+    """Delete a coupon."""
+    admin_data.delete_coupon(coupon_id)
+    messages.success(request, "Coupon deleted.")
+    return redirect("admin_dashboard")
